@@ -1,0 +1,48 @@
+{
+  "spec_version": "0.1",
+  "claim_id": "example-0001",
+  "paper": {
+    "title": "Example paper title (fictional, for illustration only)",
+    "authors": ["Example Author"],
+    "field": "Computer science"
+  },
+  "datasets": [
+    {
+      "name": "measurements.csv",
+      "url": "https://example.org/data/measurements.csv",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "license": "CC-BY-4.0"
+    }
+  ],
+  "code": {
+    "repository": "https://example.org/example/analysis",
+    "commit": "abcdef1234567"
+  },
+  "environment": {
+    "image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "dependencies": {
+      "python": "3.11.9",
+      "numpy": "1.26.4"
+    },
+    "seed": 42,
+    "timeout_seconds": 3600
+  },
+  "entrypoint": {
+    "command": "python analysis.py --out results.json",
+    "working_dir": "."
+  },
+  "targets": [
+    {
+      "name": "primary_effect",
+      "published": 0.41,
+      "source": "Table 2, row 1",
+      "tolerance": { "type": "absolute", "value": 0.02 }
+    },
+    {
+      "name": "sample_size",
+      "published": 1200,
+      "source": "Methods, paragraph 3",
+      "tolerance": { "type": "absolute", "value": 0 }
+    }
+  ]
+}

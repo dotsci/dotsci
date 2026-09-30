@@ -1,0 +1,17 @@
+# Per-claim image example.
+#
+# Build it from the reference base, install the claim's pinned dependencies at
+# build time, push it to a registry, and record the pushed image's digest in the
+# claim's manifest (environment.image_digest).
+#
+# requirements.lock must pin every package with hashes, for example produced by
+#   pip-compile --generate-hashes requirements.in
+
+ARG BASE_IMAGE=dotsci-python-base
+FROM ${BASE_IMAGE}
+
+USER root
+COPY requirements.lock /tmp/requirements.lock
+RUN pip install --no-cache-dir --require-hashes -r /tmp/requirements.lock \
+ && rm /tmp/requirements.lock
+USER 10001:10001

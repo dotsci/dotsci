@@ -38,6 +38,18 @@ listed -> funded -> assigned -> running -> published -> challenge_window -> sett
 - `spec_issue`: the spec cannot be executed as written.
 - `input_mismatch`: an input hash does not match the manifest.
 
+## Execution contract
+
+The entrypoint runs inside the sandbox with:
+
+- code mounted read-only at `/work/code` (the working directory, unless the manifest sets `working_dir`)
+- data mounted read-only at `/work/data`, with the path in `DOTSCI_DATA_DIR`
+- a writable output directory at `/work/out`, with the path in `DOTSCI_OUT_DIR`
+- `DOTSCI_SEED` set when the manifest has a seed
+- no network access
+
+The analysis writes `results.json` to the output directory: a JSON object mapping each target name to a number. A run that exits non-zero, times out, leaves `results.json` missing or malformed, or writes symlinks to the output directory is recorded as `spec_issue`. See `sandbox/README.md` for the full isolation settings.
+
 ## Tolerance
 
 Each target carries its own tolerance:

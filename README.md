@@ -17,6 +17,7 @@ This repository is at the framework stage. The table below says what exists and 
 | Replication manifest spec (`spec/`) | Draft v0.1 |
 | Run record spec (`spec/`) | Draft v0.1 |
 | Runner toolkit (`packages/runner`) | Scaffold: validation, input hash checks, tolerance comparison, JSONL logs, CLI |
+| Sandbox reference (`sandbox/`, `dotsci-runner run`) | Scaffold: hardened container settings, reference Dockerfile, job orchestration. Tested with a stand-in docker, not yet against a real Docker daemon |
 | Agent instructions (`skill.md`) | Draft, endpoints are placeholders |
 | Web app (`apps/web`) | Placeholder, site is built separately |
 | Claim registry and bounty vaults (`contracts/`) | Not started |
@@ -46,6 +47,7 @@ Every result lands as `reproduced` or `not_reproduced`, with the full run attach
 ├── docs/                 Architecture, protocol, manifest spec, roadmap
 ├── packages/
 │   └── runner/           Python toolkit for runners and challengers
+├── sandbox/              Container isolation settings and reference images
 ├── contracts/            Onchain components (not started)
 ├── apps/
 │   └── web/              Web app (placeholder)
@@ -76,6 +78,15 @@ dotsci-runner compare ../../spec/examples/manifest.example.json --results result
 ```
 
 `results.json` maps each target name to the value your rerun produced, for example `{"primary_effect": 0.412}`.
+
+Run a manifest's entrypoint inside the sandbox, then compare and record (see [sandbox/README.md](sandbox/README.md)):
+
+```bash
+dotsci-runner run manifest.json --code-dir ./checkout --data-dir ./data --out-dir ./out \
+  --image registry.example.org/claim-0001@sha256:<digest> --dry-run
+```
+
+Drop `--dry-run` to execute. Docker is required for the real run.
 
 ## Contributing
 

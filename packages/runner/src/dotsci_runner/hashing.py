@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 
@@ -36,6 +36,10 @@ def verify_inputs(manifest: dict[str, Any], data_dir: str | Path) -> list[InputC
     for dataset in manifest["datasets"]:
         name = dataset["name"]
         expected = dataset["sha256"]
+        relative = PurePosixPath(name)
+        if relative.is_absolute() or ".." in relative.parts:
+            results.append(InputCheck(name, expected, None, False, "invalid dataset name"))
+            continue
         path = base / name
         if not path.is_file():
             results.append(InputCheck(name, expected, None, False, "file not found"))

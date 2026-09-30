@@ -4,16 +4,34 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import sys
 from pathlib import Path
-
-from jsonschema import Draft202012Validator
 
 from . import __version__
 from .compare import REPRODUCED, compare_targets
 from .hashing import verify_inputs
+from .job import preflight, run_job
+from .manifest import ManifestError, load_manifest
+from .record import build_run_record
 from .runlog import RunLog
-from .manifest import ManifestError, _schema, load_manifest
+from .sandbox import Limits, SandboxError, build_docker_command
+
+
+class _Tee:
+    """Write log lines to several streams."""
+
+    def __init__(self, *streams) -> None:
+        self._streams = streams
+
+    def write(self, text: str) -> int:
+        for stream in self._streams:
+            stream.write(text)
+        return len(text)
+
+    def flush(self) -> None:
+        for stream in self._streams:
+            stream.flush()
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
@@ -53,6 +71,14 @@ def _cmd_verify_inputs(args: argparse.Namespace) -> int:
     return 0
 
 
+def _emit_record(record: dict, out: str | None) -> None:
+    text = json.dumps(record, indent=2)
+    if out:
+        Path(out).write_text(text + "\n", encoding="utf-8")
+    else:
+        print(text)
+
+
 def _cmd_compare(args: argparse.Namespace) -> int:
     log = RunLog()
     try:
@@ -72,44 +98,82 @@ def _cmd_compare(args: argparse.Namespace) -> int:
 
     comparisons, outcome = compare_targets(manifest["targets"], results)
     for comparison in comparisons:
-        step = "compare"
         name = comparison["name"]
         if comparison["match"]:
-            log.info(step, f"{name} within tolerance")
+            log.info("compare", f"{name} within tolerance")
         else:
-            log.warn(step, f"{name} outside tolerance or missing")
+            log.warn("compare", f"{name} outside tolerance or missing")
     log.info("outcome", outcome)
 
-    record = {
-        "spec_version": "0.1",
-        "job_id": args.job_id,
-        "claim_id": manifest["claim_id"],
-        "role": args.role,
-        "input_hashes": {},
-        "output_hashes": {},
-        "environment": {
-            "image_digest": manifest["environment"]["image_digest"],
-            **({"seed": manifest["environment"]["seed"]} if "seed" in manifest["environment"] else {}),
-        },
-        "comparisons": [
-            {**c, "rerun": _finite(c["rerun"]), "difference": _finite(c["difference"])}
-            for c in comparisons
-        ],
-        "outcome": outcome,
-        "notes": "",
-    }
-
-    text = json.dumps(record, indent=2)
-    if args.out:
-        Path(args.out).write_text(text + "\n", encoding="utf-8")
-    else:
-        print(text)
+    record = build_run_record(manifest, comparisons, outcome, job_id=args.job_id, role=args.role)
+    _emit_record(record, args.out)
     return 0 if outcome == REPRODUCED else 1
 
 
-def _finite(value: float) -> float:
-    """JSON has no NaN. A missing result is recorded as 0.0 and marked match=false."""
-    return value if value == value and value not in (float("inf"), float("-inf")) else 0.0
+def _cmd_run(args: argparse.Namespace) -> int:
+    log_file = open(args.log_file, "a", encoding="utf-8") if args.log_file else None
+    log = RunLog(_Tee(sys.stderr, log_file) if log_file else sys.stderr)
+    try:
+        try:
+            manifest = load_manifest(args.manifest)
+        except ManifestError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+
+        limits = Limits(cpus=args.cpus, memory=args.memory, pids=args.pids, tmp_size=args.tmp_size)
+
+        if args.dry_run:
+            problems, _ = preflight(
+                manifest,
+                code_dir=args.code_dir,
+                data_dir=args.data_dir,
+                image_ref=args.image,
+                git_bin=args.git,
+            )
+            if problems:
+                for problem in problems:
+                    log.error("preflight", problem)
+                return 1
+            log.info("preflight", "datasets, code checkout, and image digest verified")
+            cmd = build_docker_command(
+                image_ref=args.image,
+                code_dir=args.code_dir,
+                data_dir=args.data_dir,
+                out_dir=args.out_dir,
+                command=manifest["entrypoint"]["command"],
+                name="dotsci-dry-run",
+                working_dir=manifest["entrypoint"].get("working_dir"),
+                seed=manifest["environment"].get("seed"),
+                limits=limits,
+                runtime=args.runtime,
+                docker_bin=args.docker,
+            )
+            print(shlex.join(cmd))
+            return 0
+
+        record = run_job(
+            manifest,
+            code_dir=args.code_dir,
+            data_dir=args.data_dir,
+            out_dir=args.out_dir,
+            image_ref=args.image,
+            job_id=args.job_id,
+            role=args.role,
+            limits=limits,
+            runtime=args.runtime,
+            log=log,
+            docker_bin=args.docker,
+            git_bin=args.git,
+            grace_seconds=args.grace_seconds,
+        )
+        _emit_record(record, args.record)
+        return 0 if record["outcome"] == REPRODUCED else 1
+    except SandboxError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    finally:
+        if log_file:
+            log_file.close()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -133,6 +197,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_compare.add_argument("--role", choices=["runner", "challenger"], default="runner")
     p_compare.add_argument("--out")
     p_compare.set_defaults(func=_cmd_compare)
+
+    p_run = sub.add_parser("run", help="verify inputs, run the entrypoint in the sandbox, and record the result")
+    p_run.add_argument("manifest")
+    p_run.add_argument("--code-dir", required=True, help="clean checkout of the pinned commit")
+    p_run.add_argument("--data-dir", required=True, help="directory holding the manifest's datasets")
+    p_run.add_argument("--out-dir", required=True, help="empty directory for the analysis output")
+    p_run.add_argument("--image", required=True, help="image reference pinned by digest: repository@sha256:...")
+    p_run.add_argument("--job-id", default="local")
+    p_run.add_argument("--role", choices=["runner", "challenger"], default="runner")
+    p_run.add_argument("--record", help="write the run record here instead of stdout")
+    p_run.add_argument("--log-file", help="also append JSONL logs to this file")
+    p_run.add_argument("--cpus", type=float, default=2.0)
+    p_run.add_argument("--memory", default="4g")
+    p_run.add_argument("--pids", type=int, default=256)
+    p_run.add_argument("--tmp-size", default="512m")
+    p_run.add_argument("--runtime", help="container runtime, for example runsc for gVisor")
+    p_run.add_argument("--docker", default="docker", help="docker executable")
+    p_run.add_argument("--git", default="git", help="git executable")
+    p_run.add_argument("--grace-seconds", type=int, default=10)
+    p_run.add_argument("--dry-run", action="store_true", help="run the checks and print the docker command only")
+    p_run.set_defaults(func=_cmd_run)
 
     return parser
 

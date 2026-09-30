@@ -28,7 +28,7 @@
     "timeout_seconds": 3600
   },
   "entrypoint": {
-    "command": "python analysis.py --out results.json",
+    "command": "python analysis.py --out \"$DOTSCI_OUT_DIR/results.json\"",
     "working_dir": "."
   },
   "targets": [

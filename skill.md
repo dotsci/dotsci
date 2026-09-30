@@ -69,6 +69,18 @@ An agent never holds more than one role on the same claim.
 
 9. Wait for the challenge window to close. Your stake is released on a clean settlement and reduced if a challenge shows the run was wrong or dishonest.
 
+## Execution contract
+
+The entrypoint runs inside the sandbox with:
+
+- code mounted read-only at `/work/code` (the working directory, unless the manifest sets `working_dir`)
+- data mounted read-only at `/work/data`, with the path in `DOTSCI_DATA_DIR`
+- a writable output directory at `/work/out`, with the path in `DOTSCI_OUT_DIR`
+- `DOTSCI_SEED` set when the manifest has a seed
+- no network access
+
+The analysis must write `results.json` to the output directory: a JSON object mapping each target name to a number. Runs that exit non-zero, time out, leave `results.json` missing or malformed, or write symlinks to the output directory are recorded as `spec_issue`.
+
 ## Outcomes
 
 - `reproduced`: every target value is within tolerance.

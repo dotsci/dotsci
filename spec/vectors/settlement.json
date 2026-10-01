@@ -1,0 +1,4638 @@
+{
+ "version": 1,
+ "description": "Settlement outcomes. Amounts are decimal strings, so uint256 values survive any JSON parser. Parameter sets are test values, not proposals.",
+ "invariant": "sum(payouts) + to_vault + to_treasury == bounty + runner_stake + challenger_stake + sum(reviewer_stakes)",
+ "params": {
+  "mid": {
+   "runner_slash_bps": 5000,
+   "challenger_slash_bps": 3000,
+   "reviewer_slash_bps": 2000,
+   "reviewer_pool_bps": 4000,
+   "challenger_reward_bps": 2500,
+   "confirm_reward_bps": 500,
+   "spec_issue_pay_bps": 1000
+  },
+  "zero": {
+   "runner_slash_bps": 0,
+   "challenger_slash_bps": 0,
+   "reviewer_slash_bps": 0,
+   "reviewer_pool_bps": 0,
+   "challenger_reward_bps": 0,
+   "confirm_reward_bps": 0,
+   "spec_issue_pay_bps": 0
+  },
+  "full": {
+   "runner_slash_bps": 10000,
+   "challenger_slash_bps": 10000,
+   "reviewer_slash_bps": 10000,
+   "reviewer_pool_bps": 10000,
+   "challenger_reward_bps": 10000,
+   "confirm_reward_bps": 10000,
+   "spec_issue_pay_bps": 10000
+  },
+  "odd": {
+   "runner_slash_bps": 3333,
+   "challenger_slash_bps": 777,
+   "reviewer_slash_bps": 1234,
+   "reviewer_pool_bps": 6667,
+   "challenger_reward_bps": 4321,
+   "confirm_reward_bps": 99,
+   "spec_issue_pay_bps": 9999
+  }
+ },
+ "cases": [
+  {
+   "name": "mid/unchallenged",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/spec_issue",
+   "params": "mid",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "200"
+    },
+    "to_vault": "900",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/spec_issue_dust",
+   "params": "mid",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "999",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "100"
+    },
+    "to_vault": "900",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/confirmed",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "100",
+     "r": "1050"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/disputed_runner_wins",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "13",
+     "b": "13",
+     "c": "35",
+     "d": "8",
+     "r": "1111"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/disputed_challenger_wins",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "challenger",
+     "d": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "20",
+     "b": "20",
+     "c": "332",
+     "d": "8",
+     "r": "50"
+    },
+    "to_vault": "750",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/disputed_tie_three_way_split_dust",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "7",
+    "runner": "r",
+    "runner_stake": "7",
+    "challenger": "c",
+    "challenger_stake": "7",
+    "reviewer_stakes": {
+     "a": "7",
+     "b": "7",
+     "d": "7",
+     "e": "7",
+     "f": "7"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "runner",
+     "e": "challenger",
+     "f": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "7",
+     "b": "7",
+     "c": "5",
+     "d": "7",
+     "e": "6",
+     "f": "6",
+     "r": "17"
+    },
+    "to_vault": "0",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "mid/huge_amounts",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000000000000000000000000000000000000000000000000000000012345",
+    "runner": "r",
+    "runner_stake": "333333333333333333333333333333333333333333333333333333337448",
+    "challenger": "c",
+    "challenger_stake": "142857142857142857142857142857142857142857142857142857144620",
+    "reviewer_stakes": {
+     "a": "90909090909090909090909090909090909090909090909090909092031",
+     "b": "76923076923076923076923076923076923076923076923076923077872",
+     "d": "58823529411764705882352941176470588235294117647058823530137"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "127319347319347319347319347319347319347319347319347319348890",
+     "b": "61538461538461538461538461538461538461538461538461538462298",
+     "c": "502087912087912087912087912087912087912087912087912087918285",
+     "d": "95233785822021116138763197586726998491704374057315233786996",
+     "r": "166666666666666666666666666666666666666666666666666666668724"
+    },
+    "to_vault": "750000000000000000000000000000000000000000000000000000009259",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "mid/zero_everything",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_0",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "3",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "rev0": "989513000871454175",
+     "rev1": "460074633230968815",
+     "rev2": "421069372744548829"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "118741560104574503",
+     "r": "2",
+     "rev0": "791610400697163340",
+     "rev1": "499655153265826982",
+     "rev2": "460649892779406996"
+    },
+    "to_vault": "3",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_1",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "19",
+    "runner": "r",
+    "runner_stake": "202858012072481310",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "202858012072481329"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_2",
+   "params": "mid",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_3",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "699544514515330131",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "699544514515330134"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_4",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_5",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "899040955088284791",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": "c",
+    "challenger_stake": "653790",
+    "reviewer_stakes": {
+     "rev0": "0"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "457653",
+     "r": "899040955088402480",
+     "rev0": "78454"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_6",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "14",
+    "runner": "r",
+    "runner_stake": "280701317523646126",
+    "challenger": "c",
+    "challenger_stake": "346955",
+    "reviewer_stakes": {
+     "rev0": "0",
+     "rev1": "606192282853560213",
+     "rev2": "716752219090953284",
+     "rev3": "150607125980445998",
+     "rev4": "118743724844052032",
+     "rev5": "106297",
+     "rev6": "7"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "102283250375107071",
+     "r": "140350658761823063",
+     "rev0": "13637766716634681",
+     "rev1": "619830049570194894",
+     "rev2": "730389985807587965",
+     "rev3": "120485700784356799",
+     "rev4": "132381491560686713",
+     "rev5": "85038",
+     "rev6": "13637766716634688"
+    },
+    "to_vault": "11",
+    "to_treasury": "3"
+   }
+  },
+  {
+   "name": "mid/random_7",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "13",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "14",
+    "reviewer_stakes": {
+     "rev0": "273519807407267611",
+     "rev1": "861200013829111553",
+     "rev2": "0",
+     "rev3": "0",
+     "rev4": "0",
+     "rev5": "0",
+     "rev6": "2"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "runner",
+     "rev2": "challenger",
+     "rev3": "challenger",
+     "rev4": "challenger",
+     "rev5": "challenger",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "103344001659493403",
+     "r": "0",
+     "rev0": "285002474258322431",
+     "rev1": "688960011063289243",
+     "rev2": "11482666851054820",
+     "rev3": "11482666851054820",
+     "rev4": "11482666851054820",
+     "rev5": "11482666851054820",
+     "rev6": "11482666851054822"
+    },
+    "to_vault": "10",
+    "to_treasury": "4"
+   }
+  },
+  {
+   "name": "mid/random_8",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "6",
+    "runner": "r",
+    "runner_stake": "527818564635907955",
+    "challenger": "c",
+    "challenger_stake": "625576493600232549",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "944761",
+     "rev2": "0"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "783922062991004937",
+     "r": "263909282317953978",
+     "rev0": "35187904309060532",
+     "rev1": "35187904310005291",
+     "rev2": "35187904309060530"
+    },
+    "to_vault": "5",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_9",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "413521",
+    "runner": "r",
+    "runner_stake": "4637",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "418158"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_10",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "204099",
+    "runner": "r",
+    "runner_stake": "15",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "204114"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_11",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "525289529411216640",
+    "runner": "r",
+    "runner_stake": "940846",
+    "challenger": "c",
+    "challenger_stake": "339917860942540008",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "366182337413100840",
+     "r": "499025052941596654"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_12",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "704574",
+    "runner": "r",
+    "runner_stake": "589621",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1294195"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_13",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "306204604217159433",
+    "runner": "r",
+    "runner_stake": "487628",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "306204604217647061"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_14",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "673754918062657242",
+    "runner": "r",
+    "runner_stake": "298716",
+    "challenger": "c",
+    "challenger_stake": "492872",
+    "reviewer_stakes": {
+     "rev0": "600361",
+     "rev1": "0",
+     "rev2": "0",
+     "rev3": "7",
+     "rev4": "242629698412498466",
+     "rev5": "0",
+     "rev6": "86391"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "197554293325746613",
+     "r": "149358",
+     "rev0": "4852593968865266",
+     "rev1": "4852593968264905",
+     "rev2": "0",
+     "rev3": "4852593968264912",
+     "rev4": "194103758729998773",
+     "rev5": "0",
+     "rev6": "4852593968351296"
+    },
+    "to_vault": "505316188546992932",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_15",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "774596778629192833",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "774596778629192839"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_16",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "295294",
+    "reviewer_stakes": {
+     "rev0": "11",
+     "rev1": "251026430264973549",
+     "rev2": "436800875155855300",
+     "rev3": "658012246933037329",
+     "rev4": "23835802342900446"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "52416105018997932",
+     "r": "0",
+     "rev0": "9",
+     "rev1": "262674453602463023",
+     "rev2": "349440700124684240",
+     "rev3": "669660270270526803",
+     "rev4": "35483825680389920"
+    },
+    "to_vault": "1",
+    "to_treasury": "2"
+   }
+  },
+  {
+   "name": "mid/random_17",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "639227",
+    "runner": "r",
+    "runner_stake": "575300",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "31961",
+     "r": "1182566"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_18",
+   "params": "mid",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "8",
+    "runner": "r",
+    "runner_stake": "9",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "9"
+    },
+    "to_vault": "8",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_19",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "604772983016231893",
+    "runner": "r",
+    "runner_stake": "699334",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "604772983016931227"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_20",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "762990",
+    "runner": "r",
+    "runner_stake": "810849819666983434",
+    "challenger": "c",
+    "challenger_stake": "750422",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "959512",
+     "rev2": "482564",
+     "rev3": "15",
+     "rev4": "927808"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "243254945901036201",
+     "r": "405424909833491717",
+     "rev0": "40542490983349174",
+     "rev1": "40542490984308684",
+     "rev2": "40542490983831736",
+     "rev3": "12",
+     "rev4": "40542490984276980"
+    },
+    "to_vault": "572243",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_21",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "459572235396857179",
+    "challenger": "c",
+    "challenger_stake": "143021607885786030",
+    "reviewer_stakes": {
+     "rev0": "648610",
+     "rev1": "0",
+     "rev2": "562715147610376137",
+     "rev3": "858377399925261225",
+     "rev4": "249405"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "383898566495904459",
+     "r": "229786117698428590",
+     "rev0": "53528213025119372",
+     "rev1": "53528213024470762",
+     "rev2": "616243360634846899",
+     "rev3": "686701919940208980",
+     "rev4": "199524"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_22",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "4",
+    "runner": "r",
+    "runner_stake": "893080973414908999",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "893080973414909003"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_23",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "26559120367139859",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "26559120367139859"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_24",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "870387",
+    "runner": "r",
+    "runner_stake": "321084",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1191471"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_25",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "842235046548901483",
+    "runner": "r",
+    "runner_stake": "980706",
+    "challenger": "c",
+    "challenger_stake": "603284655428837781",
+    "reviewer_stakes": {
+     "rev0": "8"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "422299258800186447",
+     "r": "950826284527072990",
+     "rev0": "72394158651460541"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_26",
+   "params": "mid",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "888079",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "88807"
+    },
+    "to_vault": "799272",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_27",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "347929073607437493",
+    "runner": "r",
+    "runner_stake": "85113",
+    "challenger": "c",
+    "challenger_stake": "134455391895255572",
+    "reviewer_stakes": {
+     "rev0": "282679",
+     "rev1": "141840",
+     "rev2": "284749",
+     "rev3": "17",
+     "rev4": "878201424452123597",
+     "rev5": "15",
+     "rev6": "0"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "runner",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "94118774326678901",
+     "r": "372131044148685630",
+     "rev0": "2689107838189681",
+     "rev1": "113472",
+     "rev2": "2689107838191751",
+     "rev3": "2689107837907019",
+     "rev4": "880890532290030599",
+     "rev5": "2689107837907017",
+     "rev6": "2689107837907002"
+    },
+    "to_vault": "0",
+    "to_treasury": "3"
+   }
+  },
+  {
+   "name": "mid/random_28",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "82640870119693216",
+    "runner": "r",
+    "runner_stake": "20",
+    "challenger": "c",
+    "challenger_stake": "920615",
+    "reviewer_stakes": {
+     "rev0": "204338288114613254"
+    },
+    "votes": {
+     "rev0": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "20660217530843925",
+     "r": "10",
+     "rev0": "204338288114613258"
+    },
+    "to_vault": "61980652589769912",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "mid/random_29",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "142855",
+    "runner": "r",
+    "runner_stake": "805227",
+    "challenger": "c",
+    "challenger_stake": "90092317563858845",
+    "reviewer_stakes": {
+     "rev0": "129771",
+     "rev1": "0",
+     "rev2": "11"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "runner",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "63064622294701192",
+     "r": "16216617162442675",
+     "rev0": "5405539053961302",
+     "rev1": "5405539053831531",
+     "rev2": "9"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/unchallenged",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/spec_issue",
+   "params": "zero",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "100"
+    },
+    "to_vault": "1000",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/spec_issue_dust",
+   "params": "zero",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "999",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1"
+    },
+    "to_vault": "999",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/confirmed",
+   "params": "zero",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "50",
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/disputed_runner_wins",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "10",
+     "b": "10",
+     "c": "50",
+     "d": "10",
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/disputed_challenger_wins",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "challenger",
+     "d": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "10",
+     "b": "10",
+     "c": "50",
+     "d": "10",
+     "r": "100"
+    },
+    "to_vault": "1000",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/disputed_tie_three_way_split_dust",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "7",
+    "runner": "r",
+    "runner_stake": "7",
+    "challenger": "c",
+    "challenger_stake": "7",
+    "reviewer_stakes": {
+     "a": "7",
+     "b": "7",
+     "d": "7",
+     "e": "7",
+     "f": "7"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "runner",
+     "e": "challenger",
+     "f": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "7",
+     "b": "7",
+     "c": "7",
+     "d": "7",
+     "e": "7",
+     "f": "7",
+     "r": "14"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/huge_amounts",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000000000000000000000000000000000000000000000000000000012345",
+    "runner": "r",
+    "runner_stake": "333333333333333333333333333333333333333333333333333333337448",
+    "challenger": "c",
+    "challenger_stake": "142857142857142857142857142857142857142857142857142857144620",
+    "reviewer_stakes": {
+     "a": "90909090909090909090909090909090909090909090909090909092031",
+     "b": "76923076923076923076923076923076923076923076923076923077872",
+     "d": "58823529411764705882352941176470588235294117647058823530137"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "90909090909090909090909090909090909090909090909090909092031",
+     "b": "76923076923076923076923076923076923076923076923076923077872",
+     "c": "142857142857142857142857142857142857142857142857142857144620",
+     "d": "58823529411764705882352941176470588235294117647058823530137",
+     "r": "333333333333333333333333333333333333333333333333333333337448"
+    },
+    "to_vault": "1000000000000000000000000000000000000000000000000000000012345",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/zero_everything",
+   "params": "zero",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_0",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "3",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "rev0": "989513000871454175",
+     "rev1": "460074633230968815",
+     "rev2": "421069372744548829"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "1",
+     "r": "3",
+     "rev0": "989513000871454175",
+     "rev1": "460074633230968815",
+     "rev2": "421069372744548829"
+    },
+    "to_vault": "3",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_1",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "19",
+    "runner": "r",
+    "runner_stake": "202858012072481310",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "202858012072481329"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_2",
+   "params": "zero",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_3",
+   "params": "zero",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "699544514515330131",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "699544514515330134"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_4",
+   "params": "zero",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_5",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "899040955088284791",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": "c",
+    "challenger_stake": "653790",
+    "reviewer_stakes": {
+     "rev0": "0"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "653790",
+     "r": "899040955088284797",
+     "rev0": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_6",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "14",
+    "runner": "r",
+    "runner_stake": "280701317523646126",
+    "challenger": "c",
+    "challenger_stake": "346955",
+    "reviewer_stakes": {
+     "rev0": "0",
+     "rev1": "606192282853560213",
+     "rev2": "716752219090953284",
+     "rev3": "150607125980445998",
+     "rev4": "118743724844052032",
+     "rev5": "106297",
+     "rev6": "7"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "346955",
+     "r": "280701317523646126",
+     "rev0": "0",
+     "rev1": "606192282853560213",
+     "rev2": "716752219090953284",
+     "rev3": "150607125980445998",
+     "rev4": "118743724844052032",
+     "rev5": "106297",
+     "rev6": "7"
+    },
+    "to_vault": "14",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_7",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "13",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "14",
+    "reviewer_stakes": {
+     "rev0": "273519807407267611",
+     "rev1": "861200013829111553",
+     "rev2": "0",
+     "rev3": "0",
+     "rev4": "0",
+     "rev5": "0",
+     "rev6": "2"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "runner",
+     "rev2": "challenger",
+     "rev3": "challenger",
+     "rev4": "challenger",
+     "rev5": "challenger",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "14",
+     "r": "0",
+     "rev0": "273519807407267611",
+     "rev1": "861200013829111553",
+     "rev2": "0",
+     "rev3": "0",
+     "rev4": "0",
+     "rev5": "0",
+     "rev6": "2"
+    },
+    "to_vault": "13",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_8",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "6",
+    "runner": "r",
+    "runner_stake": "527818564635907955",
+    "challenger": "c",
+    "challenger_stake": "625576493600232549",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "944761",
+     "rev2": "0"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "625576493600232549",
+     "r": "527818564635907955",
+     "rev0": "2",
+     "rev1": "944761",
+     "rev2": "0"
+    },
+    "to_vault": "6",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_9",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "413521",
+    "runner": "r",
+    "runner_stake": "4637",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "418158"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_10",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "204099",
+    "runner": "r",
+    "runner_stake": "15",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "204114"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_11",
+   "params": "zero",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "525289529411216640",
+    "runner": "r",
+    "runner_stake": "940846",
+    "challenger": "c",
+    "challenger_stake": "339917860942540008",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "339917860942540008",
+     "r": "525289529412157486"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_12",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "704574",
+    "runner": "r",
+    "runner_stake": "589621",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1294195"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_13",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "306204604217159433",
+    "runner": "r",
+    "runner_stake": "487628",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "306204604217647061"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_14",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "673754918062657242",
+    "runner": "r",
+    "runner_stake": "298716",
+    "challenger": "c",
+    "challenger_stake": "492872",
+    "reviewer_stakes": {
+     "rev0": "600361",
+     "rev1": "0",
+     "rev2": "0",
+     "rev3": "7",
+     "rev4": "242629698412498466",
+     "rev5": "0",
+     "rev6": "86391"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "492872",
+     "r": "298716",
+     "rev0": "600361",
+     "rev1": "0",
+     "rev2": "0",
+     "rev3": "7",
+     "rev4": "242629698412498466",
+     "rev5": "0",
+     "rev6": "86391"
+    },
+    "to_vault": "673754918062657242",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_15",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "774596778629192833",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "774596778629192839"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_16",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "295294",
+    "reviewer_stakes": {
+     "rev0": "11",
+     "rev1": "251026430264973549",
+     "rev2": "436800875155855300",
+     "rev3": "658012246933037329",
+     "rev4": "23835802342900446"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "295294",
+     "r": "0",
+     "rev0": "11",
+     "rev1": "251026430264973549",
+     "rev2": "436800875155855300",
+     "rev3": "658012246933037329",
+     "rev4": "23835802342900446"
+    },
+    "to_vault": "1",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_17",
+   "params": "zero",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "639227",
+    "runner": "r",
+    "runner_stake": "575300",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "1214527"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_18",
+   "params": "zero",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "8",
+    "runner": "r",
+    "runner_stake": "9",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "9"
+    },
+    "to_vault": "8",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_19",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "604772983016231893",
+    "runner": "r",
+    "runner_stake": "699334",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "604772983016931227"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_20",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "762990",
+    "runner": "r",
+    "runner_stake": "810849819666983434",
+    "challenger": "c",
+    "challenger_stake": "750422",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "959512",
+     "rev2": "482564",
+     "rev3": "15",
+     "rev4": "927808"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "750422",
+     "r": "810849819666983434",
+     "rev0": "2",
+     "rev1": "959512",
+     "rev2": "482564",
+     "rev3": "15",
+     "rev4": "927808"
+    },
+    "to_vault": "762990",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_21",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "459572235396857179",
+    "challenger": "c",
+    "challenger_stake": "143021607885786030",
+    "reviewer_stakes": {
+     "rev0": "648610",
+     "rev1": "0",
+     "rev2": "562715147610376137",
+     "rev3": "858377399925261225",
+     "rev4": "249405"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "143021607885786030",
+     "r": "459572235396857179",
+     "rev0": "648610",
+     "rev1": "0",
+     "rev2": "562715147610376137",
+     "rev3": "858377399925261225",
+     "rev4": "249405"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_22",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "4",
+    "runner": "r",
+    "runner_stake": "893080973414908999",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "893080973414909003"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_23",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "26559120367139859",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "26559120367139859"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_24",
+   "params": "zero",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "870387",
+    "runner": "r",
+    "runner_stake": "321084",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1191471"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_25",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "842235046548901483",
+    "runner": "r",
+    "runner_stake": "980706",
+    "challenger": "c",
+    "challenger_stake": "603284655428837781",
+    "reviewer_stakes": {
+     "rev0": "8"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "603284655428837781",
+     "r": "842235046549882189",
+     "rev0": "8"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_26",
+   "params": "zero",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "888079",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "0"
+    },
+    "to_vault": "888079",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_27",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "347929073607437493",
+    "runner": "r",
+    "runner_stake": "85113",
+    "challenger": "c",
+    "challenger_stake": "134455391895255572",
+    "reviewer_stakes": {
+     "rev0": "282679",
+     "rev1": "141840",
+     "rev2": "284749",
+     "rev3": "17",
+     "rev4": "878201424452123597",
+     "rev5": "15",
+     "rev6": "0"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "runner",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "134455391895255572",
+     "r": "347929073607522606",
+     "rev0": "282679",
+     "rev1": "141840",
+     "rev2": "284749",
+     "rev3": "17",
+     "rev4": "878201424452123597",
+     "rev5": "15",
+     "rev6": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_28",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "82640870119693216",
+    "runner": "r",
+    "runner_stake": "20",
+    "challenger": "c",
+    "challenger_stake": "920615",
+    "reviewer_stakes": {
+     "rev0": "204338288114613254"
+    },
+    "votes": {
+     "rev0": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "920615",
+     "r": "20",
+     "rev0": "204338288114613254"
+    },
+    "to_vault": "82640870119693216",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "zero/random_29",
+   "params": "zero",
+   "case": {
+    "kind": "disputed",
+    "bounty": "142855",
+    "runner": "r",
+    "runner_stake": "805227",
+    "challenger": "c",
+    "challenger_stake": "90092317563858845",
+    "reviewer_stakes": {
+     "rev0": "129771",
+     "rev1": "0",
+     "rev2": "11"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "runner",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "90092317563858845",
+     "r": "948082",
+     "rev0": "129771",
+     "rev1": "0",
+     "rev2": "11"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/unchallenged",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/spec_issue",
+   "params": "full",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/spec_issue_dust",
+   "params": "full",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "999",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1000"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/confirmed",
+   "params": "full",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "1050",
+     "r": "100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/disputed_runner_wins",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "40",
+     "b": "40",
+     "c": "0",
+     "d": "0",
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/disputed_challenger_wins",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "challenger",
+     "d": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "65",
+     "b": "65",
+     "c": "1050",
+     "d": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/disputed_tie_three_way_split_dust",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "7",
+    "runner": "r",
+    "runner_stake": "7",
+    "challenger": "c",
+    "challenger_stake": "7",
+    "reviewer_stakes": {
+     "a": "7",
+     "b": "7",
+     "d": "7",
+     "e": "7",
+     "f": "7"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "runner",
+     "e": "challenger",
+     "f": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "14",
+     "b": "14",
+     "c": "0",
+     "d": "14",
+     "e": "0",
+     "f": "0",
+     "r": "14"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/huge_amounts",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000000000000000000000000000000000000000000000000000000012345",
+    "runner": "r",
+    "runner_stake": "333333333333333333333333333333333333333333333333333333337448",
+    "challenger": "c",
+    "challenger_stake": "142857142857142857142857142857142857142857142857142857144620",
+    "reviewer_stakes": {
+     "a": "90909090909090909090909090909090909090909090909090909092031",
+     "b": "76923076923076923076923076923076923076923076923076923077872",
+     "d": "58823529411764705882352941176470588235294117647058823530137"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "296037296037296037296037296037296037296037296037296037299691",
+     "b": "0",
+     "c": "1142857142857142857142857142857142857142857142857142857156965",
+     "d": "263951734539969834087481146304675716440422322775263951737797",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/zero_everything",
+   "params": "full",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_0",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "3",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "rev0": "989513000871454175",
+     "rev1": "460074633230968815",
+     "rev2": "421069372744548829"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "4",
+     "r": "0",
+     "rev0": "0",
+     "rev1": "954831133666695904",
+     "rev2": "915825873180275918"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_1",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "19",
+    "runner": "r",
+    "runner_stake": "202858012072481310",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "202858012072481329"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_2",
+   "params": "full",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_3",
+   "params": "full",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "699544514515330131",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "3",
+     "r": "699544514515330131"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_4",
+   "params": "full",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_5",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "899040955088284791",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": "c",
+    "challenger_stake": "653790",
+    "reviewer_stakes": {
+     "rev0": "0"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "899040955088284797",
+     "rev0": "653790"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_6",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "14",
+    "runner": "r",
+    "runner_stake": "280701317523646126",
+    "challenger": "c",
+    "challenger_stake": "346955",
+    "reviewer_stakes": {
+     "rev0": "0",
+     "rev1": "606192282853560213",
+     "rev2": "716752219090953284",
+     "rev3": "150607125980445998",
+     "rev4": "118743724844052032",
+     "rev5": "106297",
+     "rev6": "7"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "346969",
+     "r": "0",
+     "rev0": "86261688700839684",
+     "rev1": "692453971554399897",
+     "rev2": "803013907791792968",
+     "rev3": "0",
+     "rev4": "205005413544891716",
+     "rev5": "0",
+     "rev6": "86261688700839691"
+    },
+    "to_vault": "0",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "full/random_7",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "13",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "14",
+    "reviewer_stakes": {
+     "rev0": "273519807407267611",
+     "rev1": "861200013829111553",
+     "rev2": "0",
+     "rev3": "0",
+     "rev4": "0",
+     "rev5": "0",
+     "rev6": "2"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "runner",
+     "rev2": "challenger",
+     "rev3": "challenger",
+     "rev4": "challenger",
+     "rev5": "challenger",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "27",
+     "r": "0",
+     "rev0": "417053143045452869",
+     "rev1": "0",
+     "rev2": "143533335638185258",
+     "rev3": "143533335638185258",
+     "rev4": "143533335638185258",
+     "rev5": "143533335638185258",
+     "rev6": "143533335638185260"
+    },
+    "to_vault": "0",
+    "to_treasury": "5"
+   }
+  },
+  {
+   "name": "full/random_8",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "6",
+    "runner": "r",
+    "runner_stake": "527818564635907955",
+    "challenger": "c",
+    "challenger_stake": "625576493600232549",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "944761",
+     "rev2": "0"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "625576493600232555",
+     "r": "0",
+     "rev0": "175939521545302653",
+     "rev1": "175939521546247412",
+     "rev2": "175939521545302651"
+    },
+    "to_vault": "0",
+    "to_treasury": "2"
+   }
+  },
+  {
+   "name": "full/random_9",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "413521",
+    "runner": "r",
+    "runner_stake": "4637",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "418158"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_10",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "204099",
+    "runner": "r",
+    "runner_stake": "15",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "204114"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_11",
+   "params": "full",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "525289529411216640",
+    "runner": "r",
+    "runner_stake": "940846",
+    "challenger": "c",
+    "challenger_stake": "339917860942540008",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "865207390353756648",
+     "r": "940846"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_12",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "704574",
+    "runner": "r",
+    "runner_stake": "589621",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1294195"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_13",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "306204604217159433",
+    "runner": "r",
+    "runner_stake": "487628",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "306204604217647061"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_14",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "673754918062657242",
+    "runner": "r",
+    "runner_stake": "298716",
+    "challenger": "c",
+    "challenger_stake": "492872",
+    "reviewer_stakes": {
+     "rev0": "600361",
+     "rev1": "0",
+     "rev2": "0",
+     "rev3": "7",
+     "rev4": "242629698412498466",
+     "rev5": "0",
+     "rev6": "86391"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "673754918063150114",
+     "r": "0",
+     "rev0": "60657424603799656",
+     "rev1": "60657424603199295",
+     "rev2": "0",
+     "rev3": "60657424603199302",
+     "rev4": "0",
+     "rev5": "0",
+     "rev6": "60657424603285686"
+    },
+    "to_vault": "0",
+    "to_treasury": "2"
+   }
+  },
+  {
+   "name": "full/random_15",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "774596778629192833",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "774596778629192839"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_16",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "295294",
+    "reviewer_stakes": {
+     "rev0": "11",
+     "rev1": "251026430264973549",
+     "rev2": "436800875155855300",
+     "rev3": "658012246933037329",
+     "rev4": "23835802342900446"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "295295",
+     "r": "0",
+     "rev0": "0",
+     "rev1": "396626721983591986",
+     "rev2": "0",
+     "rev3": "803612538651655766",
+     "rev4": "169436094061518883"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_17",
+   "params": "full",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "639227",
+    "runner": "r",
+    "runner_stake": "575300",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "639227",
+     "r": "575300"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_18",
+   "params": "full",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "8",
+    "runner": "r",
+    "runner_stake": "9",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "17"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_19",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "604772983016231893",
+    "runner": "r",
+    "runner_stake": "699334",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "604772983016931227"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_20",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "762990",
+    "runner": "r",
+    "runner_stake": "810849819666983434",
+    "challenger": "c",
+    "challenger_stake": "750422",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "959512",
+     "rev2": "482564",
+     "rev3": "15",
+     "rev4": "927808"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "1513412",
+     "r": "0",
+     "rev0": "202712454916745864",
+     "rev1": "202712454917705374",
+     "rev2": "202712454917228426",
+     "rev3": "0",
+     "rev4": "202712454917673670"
+    },
+    "to_vault": "0",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "full/random_21",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "459572235396857179",
+    "challenger": "c",
+    "challenger_stake": "143021607885786030",
+    "reviewer_stakes": {
+     "rev0": "648610",
+     "rev1": "0",
+     "rev2": "562715147610376137",
+     "rev3": "858377399925261225",
+     "rev4": "249405"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "143021607885786030",
+     "r": "0",
+     "rev0": "439316545108104546",
+     "rev1": "439316545107455936",
+     "rev2": "1002031692717832073",
+     "rev3": "0",
+     "rev4": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "full/random_22",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "4",
+    "runner": "r",
+    "runner_stake": "893080973414908999",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "893080973414909003"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_23",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "26559120367139859",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "26559120367139859"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_24",
+   "params": "full",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "870387",
+    "runner": "r",
+    "runner_stake": "321084",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1191471"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_25",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "842235046548901483",
+    "runner": "r",
+    "runner_stake": "980706",
+    "challenger": "c",
+    "challenger_stake": "603284655428837781",
+    "reviewer_stakes": {
+     "rev0": "8"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "842235046549882189",
+     "rev0": "603284655428837789"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_26",
+   "params": "full",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "888079",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "888079"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_27",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "347929073607437493",
+    "runner": "r",
+    "runner_stake": "85113",
+    "challenger": "c",
+    "challenger_stake": "134455391895255572",
+    "reviewer_stakes": {
+     "rev0": "282679",
+     "rev1": "141840",
+     "rev2": "284749",
+     "rev3": "17",
+     "rev4": "878201424452123597",
+     "rev5": "15",
+     "rev6": "0"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "runner",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "347929073607522606",
+     "rev0": "22409231982848914",
+     "rev1": "0",
+     "rev2": "22409231982850984",
+     "rev3": "22409231982566252",
+     "rev4": "900610656434689832",
+     "rev5": "22409231982566250",
+     "rev6": "22409231982566235"
+    },
+    "to_vault": "0",
+    "to_treasury": "2"
+   }
+  },
+  {
+   "name": "full/random_28",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "82640870119693216",
+    "runner": "r",
+    "runner_stake": "20",
+    "challenger": "c",
+    "challenger_stake": "920615",
+    "reviewer_stakes": {
+     "rev0": "204338288114613254"
+    },
+    "votes": {
+     "rev0": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "82640870120613831",
+     "r": "0",
+     "rev0": "204338288114613274"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "full/random_29",
+   "params": "full",
+   "case": {
+    "kind": "disputed",
+    "bounty": "142855",
+    "runner": "r",
+    "runner_stake": "805227",
+    "challenger": "c",
+    "challenger_stake": "90092317563858845",
+    "reviewer_stakes": {
+     "rev0": "129771",
+     "rev1": "0",
+     "rev2": "11"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "runner",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "948082",
+     "rev0": "45046158782059199",
+     "rev1": "45046158781929428",
+     "rev2": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/unchallenged",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1100"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/spec_issue",
+   "params": "odd",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1099"
+    },
+    "to_vault": "1",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/spec_issue_dust",
+   "params": "odd",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "999",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "999"
+    },
+    "to_vault": "1",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/confirmed",
+   "params": "odd",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "59",
+     "r": "1091"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/disputed_runner_wins",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "11",
+     "b": "11",
+     "c": "47",
+     "d": "9",
+     "r": "1102"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/disputed_challenger_wins",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000",
+    "runner": "r",
+    "runner_stake": "100",
+    "challenger": "c",
+    "challenger_stake": "50",
+    "reviewer_stakes": {
+     "a": "10",
+     "b": "10",
+     "d": "10"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "challenger",
+     "d": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "21",
+     "b": "21",
+     "c": "494",
+     "d": "9",
+     "r": "67"
+    },
+    "to_vault": "568",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/disputed_tie_three_way_split_dust",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "7",
+    "runner": "r",
+    "runner_stake": "7",
+    "challenger": "c",
+    "challenger_stake": "7",
+    "reviewer_stakes": {
+     "a": "7",
+     "b": "7",
+     "d": "7",
+     "e": "7",
+     "f": "7"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "runner",
+     "d": "runner",
+     "e": "challenger",
+     "f": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "a": "7",
+     "b": "7",
+     "c": "7",
+     "d": "7",
+     "e": "7",
+     "f": "7",
+     "r": "14"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/huge_amounts",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1000000000000000000000000000000000000000000000000000000012345",
+    "runner": "r",
+    "runner_stake": "333333333333333333333333333333333333333333333333333333337448",
+    "challenger": "c",
+    "challenger_stake": "142857142857142857142857142857142857142857142857142857144620",
+    "reviewer_stakes": {
+     "a": "90909090909090909090909090909090909090909090909090909092031",
+     "b": "76923076923076923076923076923076923076923076923076923077872",
+     "d": "58823529411764705882352941176470588235294117647058823530137"
+    },
+    "votes": {
+     "a": "challenger",
+     "b": "runner",
+     "d": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "a": "131108536678321678321678321678321678321678321678321678323296",
+     "b": "67430769230769230769230769230769230769230769230769230770063",
+     "c": "615150559010989010989010989010989010989010989010989010996604",
+     "d": "99022975180995475113122171945701357466063348416289592761402",
+     "r": "222233333333333333333333333333333333333333333333333333336077"
+    },
+    "to_vault": "567900000000000000000000000000000000000000000000000000007011",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/zero_everything",
+   "params": "odd",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_0",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "3",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "rev0": "989513000871454175",
+     "rev1": "460074633230968815",
+     "rev2": "421069372744548829"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "40697897905702233",
+     "r": "3",
+     "rev0": "867407096563916730",
+     "rev1": "500778636431886422",
+     "rev2": "461773375945466436"
+    },
+    "to_vault": "2",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_1",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "19",
+    "runner": "r",
+    "runner_stake": "202858012072481310",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "202858012072481329"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_2",
+   "params": "odd",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_3",
+   "params": "odd",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "3",
+    "runner": "r",
+    "runner_stake": "699544514515330131",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "699544514515330134"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_4",
+   "params": "odd",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "0",
+     "r": "0"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_5",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "899040955088284791",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": "c",
+    "challenger_stake": "653790",
+    "reviewer_stakes": {
+     "rev0": "0"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "602991",
+     "r": "899040955088301729",
+     "rev0": "33867"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_6",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "14",
+    "runner": "r",
+    "runner_stake": "280701317523646126",
+    "challenger": "c",
+    "challenger_stake": "346955",
+    "reviewer_stakes": {
+     "rev0": "0",
+     "rev1": "606192282853560213",
+     "rev2": "716752219090953284",
+     "rev3": "150607125980445998",
+     "rev4": "118743724844052032",
+     "rev5": "106297",
+     "rev6": "7"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "37377151403608209",
+     "r": "187143568393014873",
+     "rev0": "14953103414674031",
+     "rev1": "621145386268234244",
+     "rev2": "731705322505627315",
+     "rev3": "132022206634458962",
+     "rev4": "133696828258726063",
+     "rev5": "93180",
+     "rev6": "14953103414674038"
+    },
+    "to_vault": "8",
+    "to_treasury": "3"
+   }
+  },
+  {
+   "name": "odd/random_7",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "13",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "14",
+    "reviewer_stakes": {
+     "rev0": "273519807407267611",
+     "rev1": "861200013829111553",
+     "rev2": "0",
+     "rev3": "0",
+     "rev4": "0",
+     "rev5": "0",
+     "rev6": "2"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "runner",
+     "rev2": "challenger",
+     "rev3": "challenger",
+     "rev4": "challenger",
+     "rev5": "challenger",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "35420484832780591",
+     "r": "0",
+     "rev0": "285328406886222909",
+     "rev1": "754927932122599188",
+     "rev2": "11808599478955298",
+     "rev3": "11808599478955298",
+     "rev4": "11808599478955298",
+     "rev5": "11808599478955298",
+     "rev6": "11808599478955300"
+    },
+    "to_vault": "8",
+    "to_treasury": "5"
+   }
+  },
+  {
+   "name": "odd/random_8",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "6",
+    "runner": "r",
+    "runner_stake": "527818564635907955",
+    "challenger": "c",
+    "challenger_stake": "625576493600232549",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "944761",
+     "rev2": "0"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "684211272067028820",
+     "r": "351896637042759834",
+     "rev0": "39095716375450619",
+     "rev1": "39095716376395378",
+     "rev2": "39095716375450617"
+    },
+    "to_vault": "4",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "odd/random_9",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "413521",
+    "runner": "r",
+    "runner_stake": "4637",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "418158"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_10",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "204099",
+    "runner": "r",
+    "runner_stake": "15",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "204114"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_11",
+   "params": "odd",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "525289529411216640",
+    "runner": "r",
+    "runner_stake": "940846",
+    "challenger": "c",
+    "challenger_stake": "339917860942540008",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "345118227283711052",
+     "r": "520089163070986442"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_12",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "704574",
+    "runner": "r",
+    "runner_stake": "589621",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1294195"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_13",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "306204604217159433",
+    "runner": "r",
+    "runner_stake": "487628",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "306204604217647061"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_14",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "673754918062657242",
+    "runner": "r",
+    "runner_stake": "298716",
+    "challenger": "c",
+    "challenger_stake": "492872",
+    "reviewer_stakes": {
+     "rev0": "600361",
+     "rev1": "0",
+     "rev2": "0",
+     "rev3": "7",
+     "rev4": "242629698412498466",
+     "rev5": "0",
+     "rev6": "86391"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "301108670339941550",
+     "r": "199154",
+     "rev0": "4990333635507208",
+     "rev1": "4990333634906847",
+     "rev2": "0",
+     "rev3": "4990333634906854",
+     "rev4": "212689193628396156",
+     "rev5": "0",
+     "rev6": "4990333634993238"
+    },
+    "to_vault": "382625417967783048",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_15",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "774596778629192833",
+    "runner": "r",
+    "runner_stake": "6",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "774596778629192839"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_16",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": "c",
+    "challenger_stake": "295294",
+    "reviewer_stakes": {
+     "rev0": "11",
+     "rev1": "251026430264973549",
+     "rev2": "436800875155855300",
+     "rev3": "658012246933037329",
+     "rev4": "23835802342900446"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "challenger",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "17965279290773002",
+     "r": "0",
+     "rev0": "10",
+     "rev1": "263005079832891828",
+     "rev2": "382899647161622756",
+     "rev3": "669990896500955608",
+     "rev4": "35814451910818725"
+    },
+    "to_vault": "1",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_17",
+   "params": "odd",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "639227",
+    "runner": "r",
+    "runner_stake": "575300",
+    "challenger": "c",
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "6328",
+     "r": "1208199"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_18",
+   "params": "odd",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "8",
+    "runner": "r",
+    "runner_stake": "9",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "16"
+    },
+    "to_vault": "1",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_19",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "604772983016231893",
+    "runner": "r",
+    "runner_stake": "699334",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "604772983016931227"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_20",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "762990",
+    "runner": "r",
+    "runner_stake": "810849819666983434",
+    "challenger": "c",
+    "challenger_stake": "750422",
+    "reviewer_stakes": {
+     "rev0": "2",
+     "rev1": "959512",
+     "rev2": "482564",
+     "rev3": "15",
+     "rev4": "927808"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "90076406424585469",
+     "r": "540593574771977856",
+     "rev0": "45044959617875056",
+     "rev1": "45044959618834566",
+     "rev2": "45044959618357618",
+     "rev3": "14",
+     "rev4": "45044959618802862"
+    },
+    "to_vault": "433303",
+    "to_treasury": "3"
+   }
+  },
+  {
+   "name": "odd/random_21",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "0",
+    "runner": "r",
+    "runner_stake": "459572235396857179",
+    "challenger": "c",
+    "challenger_stake": "143021607885786030",
+    "reviewer_stakes": {
+     "rev0": "648610",
+     "rev1": "0",
+     "rev2": "562715147610376137",
+     "rev3": "858377399925261225",
+     "rev4": "249405"
+    },
+    "votes": {
+     "rev0": "challenger",
+     "rev1": "challenger",
+     "rev2": "challenger",
+     "rev3": "runner",
+     "rev4": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "229379370315405914",
+     "r": "306396809339084682",
+     "rev0": "57580478260302151",
+     "rev1": "57580478259653541",
+     "rev2": "620295625870029678",
+     "rev3": "752453628774483990",
+     "rev4": "218629"
+    },
+    "to_vault": "0",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "odd/random_22",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "4",
+    "runner": "r",
+    "runner_stake": "893080973414908999",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "893080973414909003"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_23",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "26559120367139859",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "26559120367139859"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_24",
+   "params": "odd",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "870387",
+    "runner": "r",
+    "runner_stake": "321084",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "1191471"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_25",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "842235046548901483",
+    "runner": "r",
+    "runner_stake": "980706",
+    "challenger": "c",
+    "challenger_stake": "603284655428837781",
+    "reviewer_stakes": {
+     "rev0": "8"
+    },
+    "votes": {
+     "rev0": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "556409437702017086",
+     "r": "857858556618231527",
+     "rev0": "31251707658471365"
+    },
+    "to_vault": "0",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_26",
+   "params": "odd",
+   "case": {
+    "kind": "spec_issue",
+    "bounty": "888079",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "expected": {
+    "verdict": "none",
+    "payouts": {
+     "r": "887990"
+    },
+    "to_vault": "89",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_27",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "347929073607437493",
+    "runner": "r",
+    "runner_stake": "85113",
+    "challenger": "c",
+    "challenger_stake": "134455391895255572",
+    "reviewer_stakes": {
+     "rev0": "282679",
+     "rev1": "141840",
+     "rev2": "284749",
+     "rev3": "17",
+     "rev4": "878201424452123597",
+     "rev5": "15",
+     "rev6": "0"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "challenger",
+     "rev2": "runner",
+     "rev3": "runner",
+     "rev4": "runner",
+     "rev5": "runner",
+     "rev6": "runner"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "124008207944994215",
+     "r": "351411120018150551",
+     "rev0": "1160856256891164",
+     "rev1": "124337",
+     "rev2": "1160856256893234",
+     "rev3": "1160856256608502",
+     "rev4": "879362280708732082",
+     "rev5": "1160856256608500",
+     "rev6": "1160856256608485"
+    },
+    "to_vault": "0",
+    "to_treasury": "5"
+   }
+  },
+  {
+   "name": "odd/random_28",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "82640870119693216",
+    "runner": "r",
+    "runner_stake": "20",
+    "challenger": "c",
+    "challenger_stake": "920615",
+    "reviewer_stakes": {
+     "rev0": "204338288114613254"
+    },
+    "votes": {
+     "rev0": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "challenger",
+    "payouts": {
+     "c": "35709119979640055",
+     "r": "14",
+     "rev0": "204338288114613258"
+    },
+    "to_vault": "46931750140973778",
+    "to_treasury": "0"
+   }
+  },
+  {
+   "name": "odd/random_29",
+   "params": "odd",
+   "case": {
+    "kind": "disputed",
+    "bounty": "142855",
+    "runner": "r",
+    "runner_stake": "805227",
+    "challenger": "c",
+    "challenger_stake": "90092317563858845",
+    "reviewer_stakes": {
+     "rev0": "129771",
+     "rev1": "0",
+     "rev2": "11"
+    },
+    "votes": {
+     "rev0": "runner",
+     "rev1": "runner",
+     "rev2": "challenger"
+    }
+   },
+   "expected": {
+    "verdict": "runner",
+    "payouts": {
+     "c": "83092144489147013",
+     "r": "2333157686749536",
+     "rev0": "2333507694584960",
+     "rev1": "2333507694455189",
+     "rev2": "10"
+    },
+    "to_vault": "0",
+    "to_treasury": "1"
+   }
+  },
+  {
+   "name": "invalid/negative_amount",
+   "params": "mid",
+   "case": {
+    "kind": "unchallenged",
+    "bounty": "-1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "error": "invalid"
+  },
+  {
+   "name": "invalid/unknown_kind",
+   "params": "mid",
+   "case": {
+    "kind": "mystery",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "error": "invalid"
+  },
+  {
+   "name": "invalid/confirmed_without_challenger",
+   "params": "mid",
+   "case": {
+    "kind": "confirmed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "0",
+    "challenger": null,
+    "challenger_stake": "0",
+    "reviewer_stakes": {},
+    "votes": {}
+   },
+   "error": "invalid"
+  },
+  {
+   "name": "invalid/runner_is_also_reviewer",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "r": "1"
+    },
+    "votes": {
+     "r": "runner"
+    }
+   },
+   "error": "invalid"
+  },
+  {
+   "name": "invalid/missing_vote",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "a": "1",
+     "b": "1"
+    },
+    "votes": {
+     "a": "runner"
+    }
+   },
+   "error": "invalid"
+  },
+  {
+   "name": "invalid/even_split",
+   "params": "mid",
+   "case": {
+    "kind": "disputed",
+    "bounty": "1",
+    "runner": "r",
+    "runner_stake": "1",
+    "challenger": "c",
+    "challenger_stake": "1",
+    "reviewer_stakes": {
+     "a": "1",
+     "b": "1"
+    },
+    "votes": {
+     "a": "runner",
+     "b": "challenger"
+    }
+   },
+   "error": "tie"
+  }
+ ]
+}

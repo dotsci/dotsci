@@ -1,0 +1,491 @@
+{
+ "version": 1,
+ "description": "Deterministic assignment. Words are decimal strings (unsigned 64 bit).",
+ "domain": "dotsci/assign/v1",
+ "stream": "word k is the big endian first 8 bytes of SHA-256(domain || lp(seed) || lp(claim) || lp(role) || uint64_be(block)), 4 words per block, lp = uint32_be length prefix",
+ "draw": "sort and de-duplicate candidates, then partial Fisher-Yates: for i in 0..count, j = i + uniform_below(len - i), swap, pick pool[i]",
+ "streams": [
+  {
+   "seed": "8efd6168a055d1e45863c237eb3feab2be94f10b7ccdc5bf8bb54305c8b19f7f",
+   "claim_id": "claim-1",
+   "role": "runner",
+   "words": [
+    "5907769765139306911",
+    "8150683989415615705",
+    "11720909220854181974",
+    "17233037028029286150",
+    "13405634308401880278",
+    "3354131340456336115",
+    "14037377224741891119",
+    "10506351033756930571",
+    "18279834478028092934",
+    "207761054690753411"
+   ]
+  },
+  {
+   "seed": "0eb026731d9ea3f870511f8c18daeb814eaa2c9e276082b204f2a962212fb5bd",
+   "claim_id": "claim-1",
+   "role": "reviewer",
+   "words": [
+    "9539976736131913439",
+    "16391368022306445702",
+    "10219621082685861250",
+    "13630526919888409377",
+    "18299103848989882254",
+    "1292535645818027691",
+    "16789980422189913719",
+    "8778747324749941184",
+    "2092138083775551659",
+    "11758064668075425122"
+   ]
+  },
+  {
+   "seed": "532b20b0105c9883348558ed2711c7d23ea6b4ee718364a87e16fad4b3c3a029",
+   "claim_id": "claim-2",
+   "role": "runner",
+   "words": [
+    "7309801083046756369",
+    "7405019734544610430",
+    "7652165312346356575",
+    "14948213619274505835",
+    "6451130179735447758",
+    "11128884953664894707",
+    "1177444401893376131",
+    "7732178414462097259",
+    "9223308201154252384",
+    "17308808454809124565"
+   ]
+  },
+  {
+   "seed": "06a8db106a32a00f305948a18f7c301fe27f780eb07fa61b5e664d51c1011718",
+   "claim_id": "",
+   "role": "",
+   "words": [
+    "6573853742623120975",
+    "7533613487515796761",
+    "4942828749864840906",
+    "15182405450427312581",
+    "8408849727920703714",
+    "8625705268194478016",
+    "10633952950408335925",
+    "7615412042757628084",
+    "8797484638039232583",
+    "2813395582601170473"
+   ]
+  },
+  {
+   "seed": "000102030405060708090a0b0c0d0e0f",
+   "claim_id": "claim-1",
+   "role": "runner",
+   "words": [
+    "13152062045283815226",
+    "7558636908114918393",
+    "14192544096482180222",
+    "14263314971463655200",
+    "1570877644587845691",
+    "13554272174262114527",
+    "2818257576541567081",
+    "9162322333797152860",
+    "4306909799796737407",
+    "7376518517928251042"
+   ]
+  }
+ ],
+ "uniform_below": [
+  {
+   "n": "1",
+   "words": [
+    "5"
+   ],
+   "result": "0"
+  },
+  {
+   "n": "2",
+   "words": [
+    "18446744073709551615"
+   ],
+   "result": "1"
+  },
+  {
+   "n": "3",
+   "words": [
+    "18446744073709551615",
+    "18446744073709551614"
+   ],
+   "result": "2"
+  },
+  {
+   "n": "3",
+   "words": [
+    "18446744073709551615",
+    "18446744073709551615",
+    "7"
+   ],
+   "result": "1"
+  },
+  {
+   "n": "10",
+   "words": [
+    "18446744073709551615",
+    "18446744073709551610",
+    "18446744073709551609"
+   ],
+   "result": "9"
+  },
+  {
+   "n": "9223372036854775809",
+   "words": [
+    "18446744073709551615",
+    "9223372036854775808"
+   ],
+   "result": "9223372036854775808"
+  },
+  {
+   "n": "7",
+   "words": [
+    "0"
+   ],
+   "result": "0"
+  },
+  {
+   "n": "7",
+   "words": [
+    "41"
+   ],
+   "result": "6"
+  }
+ ],
+ "draws": [
+  {
+   "seed": "d6f1ebe73d82f075e61392b6e4d4f848ad8448ca429202dbd5b76684e495baf7",
+   "claim_id": "claim-3",
+   "role": "runner",
+   "candidates": [
+    "agent-3",
+    "agent-6",
+    "agent-21",
+    "agent-15",
+    "agent-6",
+    "agent-0",
+    "agent-18",
+    "agent-24",
+    "agent-19"
+   ],
+   "count": 1,
+   "picks": [
+    "agent-24"
+   ]
+  },
+  {
+   "seed": "afa33ca50355fd1bc870d1e0907d2d3bbee99057eb1ac5c18f11a312e0a24d03",
+   "claim_id": "claim-4",
+   "role": "runner",
+   "candidates": [
+    "agent-5",
+    "agent-26",
+    "agent-1",
+    "agent-22"
+   ],
+   "count": 4,
+   "picks": [
+    "agent-22",
+    "agent-26",
+    "agent-1",
+    "agent-5"
+   ]
+  },
+  {
+   "seed": "4cf831243cb41684f2bc73ad7f9634dccecb3fdb08eba6009f9dd33335b197d4",
+   "claim_id": "claim-2",
+   "role": "reviewer",
+   "candidates": [
+    "agent-4",
+    "agent-28",
+    "agent-21"
+   ],
+   "count": 2,
+   "picks": [
+    "agent-28",
+    "agent-21"
+   ]
+  },
+  {
+   "seed": "808fb282f552ff63e95f9db4b56bef4ad35ba3143afef235f44a7468777a427e",
+   "claim_id": "claim-0",
+   "role": "reviewer",
+   "candidates": [
+    "agent-4",
+    "agent-19",
+    "agent-24",
+    "agent-3",
+    "agent-16",
+    "agent-5",
+    "agent-13",
+    "agent-25",
+    "agent-17",
+    "agent-10",
+    "agent-8"
+   ],
+   "count": 11,
+   "picks": [
+    "agent-10",
+    "agent-5",
+    "agent-19",
+    "agent-24",
+    "agent-25",
+    "agent-17",
+    "agent-8",
+    "agent-4",
+    "agent-3",
+    "agent-16",
+    "agent-13"
+   ]
+  },
+  {
+   "seed": "d5637ad835b040be7b5233cda89fb7d705857be6ccf94c8d1763fc538db0a224",
+   "claim_id": "claim-3",
+   "role": "runner",
+   "candidates": [
+    "agent-25",
+    "agent-11",
+    "agent-24",
+    "agent-12",
+    "agent-16",
+    "agent-13",
+    "agent-3",
+    "agent-20",
+    "agent-25",
+    "agent-0",
+    "agent-16"
+   ],
+   "count": 5,
+   "picks": [
+    "agent-16",
+    "agent-3",
+    "agent-12",
+    "agent-11",
+    "agent-13"
+   ]
+  },
+  {
+   "seed": "463ed808b75475656fe4d1586601e75538998c71c30e21710ffb58a56d03d988",
+   "claim_id": "claim-0",
+   "role": "reviewer",
+   "candidates": [
+    "agent-27",
+    "agent-18",
+    "agent-24",
+    "agent-13",
+    "agent-0",
+    "agent-11",
+    "agent-11",
+    "agent-28",
+    "agent-20",
+    "agent-3",
+    "agent-8",
+    "agent-22"
+   ],
+   "count": 2,
+   "picks": [
+    "agent-22",
+    "agent-13"
+   ]
+  },
+  {
+   "seed": "14a2a1c1a7a0d1bd9b6fe75cb46c0b03964b7ff52049bccf03dd66df44d0f6c2",
+   "claim_id": "claim-4",
+   "role": "runner",
+   "candidates": [
+    "agent-29",
+    "agent-3",
+    "agent-25",
+    "agent-2",
+    "agent-22",
+    "agent-19"
+   ],
+   "count": 2,
+   "picks": [
+    "agent-29",
+    "agent-22"
+   ]
+  },
+  {
+   "seed": "d81256079909e65ef7beef6d09542fb5cdf58fec15e272ea0603c0d06905c437",
+   "claim_id": "claim-1",
+   "role": "runner",
+   "candidates": [
+    "agent-12",
+    "agent-19",
+    "agent-3",
+    "agent-5"
+   ],
+   "count": 2,
+   "picks": [
+    "agent-12",
+    "agent-5"
+   ]
+  },
+  {
+   "seed": "9301368d59a704aa72ea8f0b10a7a588ff85ef95951be1c3b0b84aa932873170",
+   "claim_id": "claim-4",
+   "role": "reviewer",
+   "candidates": [
+    "agent-21",
+    "agent-13",
+    "agent-28"
+   ],
+   "count": 0,
+   "picks": []
+  },
+  {
+   "seed": "410883eb33c999b36f85eea7e10cd39c9f1715600e1831f675d86993ba1311f0",
+   "claim_id": "claim-2",
+   "role": "reviewer",
+   "candidates": [
+    "agent-22",
+    "agent-3",
+    "agent-10",
+    "agent-7",
+    "agent-16",
+    "agent-21",
+    "agent-22",
+    "agent-9",
+    "agent-18",
+    "agent-5"
+   ],
+   "count": 3,
+   "picks": [
+    "agent-18",
+    "agent-16",
+    "agent-5"
+   ]
+  },
+  {
+   "seed": "c51bb810e48bc1bc2389657e87f042a26c649ebddcd240170a6fa70a5e78b723",
+   "claim_id": "claim-0",
+   "role": "runner",
+   "candidates": [
+    "agent-0",
+    "agent-5",
+    "agent-29",
+    "agent-2",
+    "agent-29",
+    "agent-15",
+    "agent-26",
+    "agent-24",
+    "agent-22",
+    "agent-11"
+   ],
+   "count": 6,
+   "picks": [
+    "agent-26",
+    "agent-5",
+    "agent-22",
+    "agent-24",
+    "agent-15",
+    "agent-11"
+   ]
+  },
+  {
+   "seed": "1f964519517e9460fd77a934bfee8db30ec8b0673617189615edc087a52de3c2",
+   "claim_id": "claim-3",
+   "role": "runner",
+   "candidates": [
+    "agent-16",
+    "agent-1",
+    "agent-28",
+    "agent-9",
+    "agent-12",
+    "agent-20",
+    "agent-4",
+    "agent-13"
+   ],
+   "count": 8,
+   "picks": [
+    "agent-1",
+    "agent-12",
+    "agent-16",
+    "agent-13",
+    "agent-9",
+    "agent-20",
+    "agent-4",
+    "agent-28"
+   ]
+  },
+  {
+   "seed": "8e785ba9cbf59f2a17b1c50740cac74e9212660c76fa11c51eedc7aeb7d0931b",
+   "claim_id": "claim-3",
+   "role": "runner",
+   "candidates": [
+    "agent-28",
+    "agent-14",
+    "agent-1",
+    "agent-13",
+    "agent-11",
+    "agent-25"
+   ],
+   "count": 5,
+   "picks": [
+    "agent-11",
+    "agent-1",
+    "agent-25",
+    "agent-13",
+    "agent-28"
+   ]
+  },
+  {
+   "seed": "58a0350f8c2753207351695523ca151021650a9e9e044ef0d556f37fb919edb2",
+   "claim_id": "claim-3",
+   "role": "runner",
+   "candidates": [
+    "agent-27",
+    "agent-25",
+    "agent-0",
+    "agent-12",
+    "agent-20",
+    "agent-17",
+    "agent-20",
+    "agent-1",
+    "agent-24",
+    "agent-20",
+    "agent-28",
+    "agent-1"
+   ],
+   "count": 6,
+   "picks": [
+    "agent-24",
+    "agent-28",
+    "agent-27",
+    "agent-20",
+    "agent-12",
+    "agent-0"
+   ]
+  }
+ ],
+ "errors": [
+  {
+   "name": "seed_too_short",
+   "seed": "000000000000000000000000000000",
+   "claim_id": "c",
+   "role": "runner",
+   "candidates": [
+    "a"
+   ],
+   "count": 1,
+   "error": true
+  },
+  {
+   "name": "count_exceeds_pool",
+   "seed": "00000000000000000000000000000000",
+   "claim_id": "c",
+   "role": "runner",
+   "candidates": [
+    "a",
+    "a",
+    "b"
+   ],
+   "count": 3,
+   "error": true
+  }
+ ]
+}

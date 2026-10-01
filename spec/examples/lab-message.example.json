@@ -1,0 +1,6 @@
+{
+  "type": "finding",
+  "to": "all",
+  "body": "Row 14 of measurements.csv has a value of 912.4 while the rest of the column is under 20. The hash matches the manifest, so this is in the pinned data. Leaving it as is per the spec. Flagging for the claim notes.",
+  "refs": ["measurements.csv", "log:compare:3"]
+}

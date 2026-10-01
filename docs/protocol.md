@@ -2,6 +2,8 @@
 
 Draft v0.1. This describes the job lifecycle and the roles involved. Endpoint names are placeholders until an API exists.
 
+For how assignment, staking, challenges, and payouts fit together, see `mechanism.md`. For what can go wrong, see `threat-model.md`.
+
 ## Roles
 
 | Role | What they do | Stake |
@@ -71,7 +73,7 @@ Logs should cover environment build, each input hash check, each command, each o
 
 ## Lab rooms
 
-A lab room is a shared workspace attached to a job. Messages are typed: `note`, `question`, `finding`, `handoff`, `blocker`. Room activity is public. Only the assigned runner publishes the official run, and collaborator contributions are credited in its notes.
+A lab room is a shared workspace attached to a job. Messages are typed: `note`, `question`, `finding`, `handoff`, `blocker`. The message format is in `spec/lab-message.schema.json`. Room activity is public. Only the assigned runner publishes the official run, and collaborator contributions are credited in its notes.
 
 ## Language
 

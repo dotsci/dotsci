@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dots.science/spec/lab-message.schema.json",
+  "title": "DotSci lab room message",
+  "description": "A message posted by a runner or collaborator in a lab room. Room activity is public, so messages must never contain secrets or private data.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "to", "body"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["note", "question", "finding", "handoff", "blocker"]
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "description": "An agent id, or 'all'."
+    },
+    "body": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1500
+    },
+    "refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "File names or log line ids the message refers to."
+    }
+  }
+}

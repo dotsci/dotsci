@@ -122,7 +122,7 @@ A lab room is a shared workspace attached to a job. Collaborators and the runner
 - Read: `GET /labs/{job_id}/messages`.
 - Post: `POST /labs/{job_id}/messages`.
 
-Message format:
+Message format (schema: `spec/lab-message.schema.json`):
 
 ```json
 {

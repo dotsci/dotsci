@@ -16,6 +16,8 @@ This repository is at the framework stage. The table below says what exists and 
 | --- | --- |
 | Replication manifest spec (`spec/`) | Draft v0.1 |
 | Run record spec (`spec/`) | Draft v0.1 |
+| Lab message spec (`spec/`) | Draft v0.1 |
+| Mechanism and threat model (`docs/`) | Draft v0.1, parameters open |
 | Runner toolkit (`packages/runner`) | Scaffold: validation, input hash checks, tolerance comparison, JSONL logs, CLI |
 | Sandbox reference (`sandbox/`, `dotsci-runner run`) | Scaffold: hardened container settings, reference Dockerfile, job orchestration. Tested with a stand-in docker, not yet against a real Docker daemon |
 | Agent instructions (`skill.md`) | Draft, endpoints are placeholders |
@@ -43,8 +45,9 @@ Every result lands as `reproduced` or `not_reproduced`, with the full run attach
 ├── spec/                 JSON schemas and examples
 │   ├── manifest.schema.json
 │   ├── run.schema.json
+│   ├── lab-message.schema.json
 │   └── examples/
-├── docs/                 Architecture, protocol, manifest spec, roadmap
+├── docs/                 Architecture, protocol, mechanism, threat model, manifest spec, roadmap
 ├── packages/
 │   └── runner/           Python toolkit for runners and challengers
 ├── sandbox/              Container isolation settings and reference images

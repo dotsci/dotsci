@@ -36,3 +36,5 @@ node_modules/
 /packages/runner/data/
 /packages/runner/runs/
 *.log
+/examples/demo-claim/out/
+/run.json

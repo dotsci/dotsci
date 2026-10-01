@@ -48,6 +48,8 @@ Every result lands as `reproduced` or `not_reproduced`, with the full run attach
 ├── packages/
 │   └── runner/           Python toolkit for runners and challengers
 ├── sandbox/              Container isolation settings and reference images
+├── examples/
+│   └── demo-claim/       A small fictional claim to try the runner end to end
 ├── contracts/            Onchain components (not started)
 ├── apps/
 │   └── web/              Web app (placeholder)
@@ -87,6 +89,8 @@ dotsci-runner run manifest.json --code-dir ./checkout --data-dir ./data --out-di
 ```
 
 Drop `--dry-run` to execute. Docker is required for the real run.
+
+Want to see the whole loop first? [examples/demo-claim](examples/demo-claim) is a small fictional claim that runs in seconds.
 
 ## Contributing
 

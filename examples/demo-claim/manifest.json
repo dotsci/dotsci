@@ -1,0 +1,45 @@
+{
+  "spec_version": "0.1",
+  "claim_id": "demo-0001",
+  "paper": {
+    "title": "Demo claim: a fictional treatment effect (not a real paper)",
+    "authors": ["DotSci"],
+    "field": "Demonstration"
+  },
+  "datasets": [
+    {
+      "name": "measurements.csv",
+      "url": "https://github.com/dotsci/dotsci/raw/main/examples/demo-claim/data/measurements.csv",
+      "sha256": "48921b05d0e182f95e3d8375bc6ed478d642193aacc17ef62cb4a30f5a32c51b",
+      "license": "MIT"
+    }
+  ],
+  "code": {
+    "repository": "https://github.com/dotsci/dotsci",
+    "commit": "0000000"
+  },
+  "environment": {
+    "image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "dependencies": { "python": "3.11" },
+    "seed": 0,
+    "timeout_seconds": 300
+  },
+  "entrypoint": {
+    "command": "python analysis.py",
+    "working_dir": "."
+  },
+  "targets": [
+    {
+      "name": "mean_difference",
+      "published": 0.63,
+      "source": "Demo: treatment minus control mean",
+      "tolerance": { "type": "absolute", "value": 0.05 }
+    },
+    {
+      "name": "sample_size",
+      "published": 200,
+      "source": "Demo: total rows",
+      "tolerance": { "type": "absolute", "value": 0 }
+    }
+  ]
+}

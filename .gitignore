@@ -17,6 +17,8 @@ venv/
 .ruff_cache/
 build/
 dist/
+# The single file verifier build is committed on purpose: web projects load it by URL.
+!packages/verify-js/dist/
 
 # Node
 node_modules/

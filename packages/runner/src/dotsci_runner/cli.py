@@ -12,7 +12,7 @@ from . import __version__
 from .compare import REPRODUCED, compare_targets
 from .hashing import verify_inputs
 from .job import preflight, run_job
-from .manifest import ManifestError, load_manifest
+from .manifest import ManifestError, load_manifest, manifest_hash
 from .record import build_run_record
 from .runlog import RunLog
 from .sandbox import Limits, SandboxError, build_docker_command
@@ -41,6 +41,17 @@ def _cmd_validate(args: argparse.Namespace) -> int:
         print(str(exc), file=sys.stderr)
         return 1
     print(f"ok: {manifest['claim_id']}")
+    return 0
+
+
+def _cmd_hash(args: argparse.Namespace) -> int:
+    try:
+        manifest = load_manifest(args.manifest)
+    except ManifestError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    digest = manifest_hash(manifest)
+    print(f"0x{digest}" if args.bytes32 else f"sha256:{digest}")
     return 0
 
 
@@ -184,6 +195,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_validate = sub.add_parser("validate", help="validate a manifest against the schema")
     p_validate.add_argument("manifest")
     p_validate.set_defaults(func=_cmd_validate)
+
+    p_hash = sub.add_parser("hash", help="print the canonical hash of a manifest (the value registered for a claim)")
+    p_hash.add_argument("manifest")
+    p_hash.add_argument("--bytes32", action="store_true", help="print as 0x-prefixed hex, ready for a contract call")
+    p_hash.set_defaults(func=_cmd_hash)
 
     p_inputs = sub.add_parser("verify-inputs", help="check input file hashes against a manifest")
     p_inputs.add_argument("manifest")

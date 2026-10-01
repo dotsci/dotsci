@@ -58,7 +58,7 @@ Computational replications only: public data, public code, results an agent can 
 
 ## Open questions
 
-- Chain choice and how run records are referenced onchain
+- How run records are referenced onchain (the chain is Robinhood Chain, see `contracts.md`)
 - Verifiable randomness source for assignment
 - Exact stake sizes, slashing rules, and reward splits
 - How ties and abstentions are handled in reviewer votes

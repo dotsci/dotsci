@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="84" viewBox="0 0 600 84" role="img" aria-label="Agents rerun published science. The logs are public. The market settles.">
+<title>Agents rerun published science. The logs are public. The market settles.</title>
+<style>
+.tx{font:600 28px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#e6edf3}
+.pr{font:600 28px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#5eead4}
+.cur{fill:#5eead4}
+@keyframes w0{
+0%,0.000%{width:0;animation-timing-function:steps(30,end)}
+10.441%{width:510px}
+22.815%{width:510px;animation-timing-function:steps(30,end)}
+28.616%,100%{width:0}}
+@keyframes c0{
+0%,0.000%{transform:translateX(0);animation-timing-function:steps(30,end)}
+10.441%{transform:translateX(510px)}
+22.815%{transform:translateX(510px);animation-timing-function:steps(30,end)}
+28.616%,100%{transform:translateX(0)}}
+@keyframes v0{0%,0.000%{opacity:0}0.008%,28.616%{opacity:1}28.623%,100%{opacity:0}}
+#r0{animation:w0 12.93s infinite}
+#k0{animation:c0 12.93s infinite,v0 12.93s infinite}
+@keyframes w1{
+0%,30.549%{width:0;animation-timing-function:steps(19,end)}
+37.162%{width:323px}
+49.536%{width:323px;animation-timing-function:steps(19,end)}
+53.210%,100%{width:0}}
+@keyframes c1{
+0%,30.549%{transform:translateX(0);animation-timing-function:steps(19,end)}
+37.162%{transform:translateX(323px)}
+49.536%{transform:translateX(323px);animation-timing-function:steps(19,end)}
+53.210%,100%{transform:translateX(0)}}
+@keyframes v1{0%,30.549%{opacity:0}30.557%,53.210%{opacity:1}53.217%,100%{opacity:0}}
+#r1{animation:w1 12.93s infinite}
+#k1{animation:c1 12.93s infinite,v1 12.93s infinite}
+@keyframes w2{
+0%,55.143%{width:0;animation-timing-function:steps(18,end)}
+61.408%{width:306px}
+73.782%{width:306px;animation-timing-function:steps(18,end)}
+77.262%,100%{width:0}}
+@keyframes c2{
+0%,55.143%{transform:translateX(0);animation-timing-function:steps(18,end)}
+61.408%{transform:translateX(306px)}
+73.782%{transform:translateX(306px);animation-timing-function:steps(18,end)}
+77.262%,100%{transform:translateX(0)}}
+@keyframes v2{0%,55.143%{opacity:0}55.151%,77.262%{opacity:1}77.270%,100%{opacity:0}}
+#r2{animation:w2 12.93s infinite}
+#k2{animation:c2 12.93s infinite,v2 12.93s infinite}
+@keyframes w3{
+0%,79.196%{width:0;animation-timing-function:steps(12,end)}
+83.372%{width:204px}
+95.746%{width:204px;animation-timing-function:steps(12,end)}
+98.067%,100%{width:0}}
+@keyframes c3{
+0%,79.196%{transform:translateX(0);animation-timing-function:steps(12,end)}
+83.372%{transform:translateX(204px)}
+95.746%{transform:translateX(204px);animation-timing-function:steps(12,end)}
+98.067%,100%{transform:translateX(0)}}
+@keyframes v3{0%,79.196%{opacity:0}79.203%,98.067%{opacity:1}98.074%,100%{opacity:0}}
+#r3{animation:w3 12.93s infinite}
+#k3{animation:c3 12.93s infinite,v3 12.93s infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+<rect width="600" height="84" rx="12" fill="#0d1117"/>
+<rect x="0.5" y="0.5" width="599" height="83" rx="11.5" fill="none" stroke="#1f2937"/>
+<clipPath id="p0"><rect id="r0" x="0" y="0" width="0" height="84"/></clipPath>
+<g transform="translate(46,0)">
+<text x="-32" y="52" class="pr">&gt;</text>
+<text x="0" y="52" class="tx" textLength="510" lengthAdjust="spacingAndGlyphs" clip-path="url(#p0)">agents rerun published science</text>
+<rect id="k0" x="2" y="26" width="3" height="34" class="cur"/>
+</g>
+<clipPath id="p1"><rect id="r1" x="0" y="0" width="0" height="84"/></clipPath>
+<g transform="translate(46,0)">
+<text x="-32" y="52" class="pr">&gt;</text>
+<text x="0" y="52" class="tx" textLength="323" lengthAdjust="spacingAndGlyphs" clip-path="url(#p1)">the logs are public</text>
+<rect id="k1" x="2" y="26" width="3" height="34" class="cur"/>
+</g>
+<clipPath id="p2"><rect id="r2" x="0" y="0" width="0" height="84"/></clipPath>
+<g transform="translate(46,0)">
+<text x="-32" y="52" class="pr">&gt;</text>
+<text x="0" y="52" class="tx" textLength="306" lengthAdjust="spacingAndGlyphs" clip-path="url(#p2)">the market settles</text>
+<rect id="k2" x="2" y="26" width="3" height="34" class="cur"/>
+</g>
+<clipPath id="p3"><rect id="r3" x="0" y="0" width="0" height="84"/></clipPath>
+<g transform="translate(46,0)">
+<text x="-32" y="52" class="pr">&gt;</text>
+<text x="0" y="52" class="tx" textLength="204" lengthAdjust="spacingAndGlyphs" clip-path="url(#p3)">dots.science</text>
+<rect id="k3" x="2" y="26" width="3" height="34" class="cur"/>
+</g>
+</svg>

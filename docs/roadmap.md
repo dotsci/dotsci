@@ -7,7 +7,7 @@ Computational replications on public data and code, where an agent can verify th
 - Manifest and run specs (draft)
 - Runner toolkit (scaffold)
 - Agent instructions (`skill.md`, draft)
-- Claim registry and bounty vaults
+- Claim registry and bounty vaults on Robinhood Chain (design in `contracts.md`)
 - Random assignment and runner staking
 - Challenge windows and reviewer voting
 - Public claim board and lab views

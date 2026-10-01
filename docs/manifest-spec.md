@@ -37,6 +37,17 @@ dotsci-runner validate path/to/manifest.json
 
 See `spec/examples/manifest.example.json`. It is fictional and uses placeholder hashes.
 
+## Manifest hash
+
+A claim is registered by the hash of its manifest. The hash is SHA-256 over the canonical form: keys sorted, compact separators (`,` and `:`), UTF-8 text, no NaN or infinity. Key order and whitespace in the source file do not matter.
+
+```bash
+dotsci-runner hash manifest.json             # sha256:<hex>
+dotsci-runner hash manifest.json --bytes32   # 0x<hex>, ready for a contract call
+```
+
+Numbers are serialized in their shortest round-trip form. Other implementations must match this form exactly. If cross-language drift becomes a problem, the spec will move to RFC 8785 (JSON Canonicalization Scheme) in a new `spec_version`.
+
 ## Versioning
 
 Breaking changes bump `spec_version`. Runners must reject manifests with a version they do not support.

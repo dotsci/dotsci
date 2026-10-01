@@ -1,0 +1,92 @@
+# Contracts
+
+Draft v0.1. This describes the onchain components DotSci plans to deploy on Robinhood Chain. **No contract code exists yet.** The interfaces below are design sketches, not compiled or audited code, and names and signatures will change. See `mechanism.md` for the rules these contracts enforce and `threat-model.md` for what they must resist.
+
+## Target
+
+- **Chain:** Robinhood Chain (EVM)
+- **Settlement asset:** USDG
+- **Token:** $DOTSCI launches through the Pons v2 launchpad. How $DOTSCI is used in staking and fees is not fixed in this draft. See the open parameters in `mechanism.md`.
+
+## What goes onchain, and what does not
+
+Onchain: claim registration, manifest hashes, bounty balances, stakes, assignment, run record hashes, challenges, votes, and settlement.
+
+Offchain: manifests, datasets, code, container images, and logs. They are referenced by hash. Anyone can fetch them and check the hash against the registered value.
+
+## Manifest hash
+
+A claim is registered with the hash of its canonical manifest. Get it with:
+
+```bash
+dotsci-runner hash manifest.json --bytes32
+```
+
+The hash is SHA-256 over the manifest serialized with sorted keys, compact separators, and UTF-8 text. See `manifest-spec.md`.
+
+## Components
+
+### ClaimRegistry
+Stores one record per claim: submitter, manifest hash, a URI where the manifest can be fetched, listing time, and status. A manifest hash can be registered once.
+
+```solidity
+// Design sketch. Not compiled.
+interface IClaimRegistry {
+    enum Status { Listed, Open, Assigned, Published, ChallengeWindow, Disputed, Settled, Withdrawn }
+
+    event ClaimListed(uint256 indexed claimId, address indexed submitter, bytes32 manifestHash, string manifestURI);
+    event ClaimStatusChanged(uint256 indexed claimId, Status status);
+
+    function listClaim(bytes32 manifestHash, string calldata manifestURI) external returns (uint256 claimId);
+    function claimOf(uint256 claimId) external view returns (address submitter, bytes32 manifestHash, string memory manifestURI, uint64 listedAt, Status status);
+    function claimIdOf(bytes32 manifestHash) external view returns (uint256);
+}
+```
+
+### BountyVault
+Holds USDG contributions per claim. A job opens when the vault reaches the minimum. Contributions to a job that never opens can be withdrawn. Funds are paid out only by the settlement logic.
+
+```solidity
+// Design sketch. Not compiled.
+interface IBountyVault {
+    event Funded(uint256 indexed claimId, address indexed funder, uint256 amount);
+    event Withdrawn(uint256 indexed claimId, address indexed funder, uint256 amount);
+
+    function fund(uint256 claimId, uint256 amount) external;
+    function withdraw(uint256 claimId) external;          // only while the job is not open
+    function balanceOf(uint256 claimId) external view returns (uint256);
+}
+```
+
+### JobManager (assignment and runs)
+Draws a runner using verifiable randomness, locks the runner's stake, and records the published run as a hash of the run record plus a logs URI. Rules: one role per claim, no runner-chosen claims, time limits for accepting and publishing.
+
+### DisputeModule (challenges and review)
+Opens the challenge window, accepts staked challenges, draws a reviewer panel, records votes, and returns the final outcome to settlement.
+
+### Settlement
+Releases or slashes stakes and pays the bounty according to the table in `mechanism.md`. It is the only component that moves vault funds.
+
+### Market contracts (planned)
+Claim markets come later and are resolved by the outcome the settlement records. They enforce the conflict rules: no position on a claim you ran, challenged, reviewed, or collaborated on.
+
+## Run record hash
+
+Each published run commits to its record by hash, using the same canonical serialization as manifests. Anyone can fetch the record from its URI, hash it, and check it against the chain.
+
+## Security notes
+
+- Contracts will be audited before they hold funds.
+- Upgrade and admin keys should be limited, time-locked, and documented before launch.
+- Use a pull pattern for payouts, so one failing recipient cannot block settlement.
+- Randomness for assignment must not be biasable by runners. The source is an open question.
+
+## Build order
+
+1. ClaimRegistry (no funds, lowest risk)
+2. BountyVault
+3. JobManager and staking
+4. DisputeModule and Settlement
+5. Markets
+
+Contracts will use Foundry for tests and fuzzing.

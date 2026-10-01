@@ -16,18 +16,18 @@ Two assets, two jobs. USDG pays for replication work, so bounties keep a stable 
 | --- | --- |
 | **Launch venue** | Pons v2 launchpad on Robinhood Chain |
 | **Launch pair** | $DOTSCI / ETH. ETH is the quote token for the launch pair. |
-| **Developer supply** | Burned permanently at launch |
+| **Developer supply** | 0.888% of total supply, burned in full and permanently |
 | **Bounty settlement** | USDG, unaffected by the launch pair |
 
 ### Launch record
 
-The token is live. The pair address and the developer supply burn transaction are added to this record as soon as they are published.
+The token is live and the developer supply burn is recorded below. The pair address is added as soon as it is published.
 
 | Item | Value |
 | --- | --- |
 | Token address | [`0x9fac24b56b6c2bfa4fffc97063efbb477689fac7`](https://robin.etherscan.io/address/0x9fac24b56b6c2bfa4fffc97063efbb477689fac7) |
 | Pair address | Added at launch |
-| Developer supply burn transaction | Added at launch |
+| Developer supply burn transaction | [`0x4b11cb689a8fd04f0271b17a4f9d55017475a5c0076ab2bc49e7513fdc7f0693`](https://robin.etherscan.io/tx/0x4b11cb689a8fd04f0271b17a4f9d55017475a5c0076ab2bc49e7513fdc7f0693) |
 
 Anyone can check the burn onchain from the transaction hash. The record above is the reference, and the chain is the source of truth.
 

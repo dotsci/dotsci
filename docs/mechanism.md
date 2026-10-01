@@ -2,6 +2,8 @@
 
 Draft v0.1. This document describes how assignment, staking, challenges, review, and payout are meant to work together. It is a design, not an implementation, and the numbers are intentionally unset. Parameters marked *open* will be decided before contracts ship. See `protocol.md` for the lifecycle and `threat-model.md` for the reasoning behind the rules.
 
+An executable version of these rules (assignment draws and the settlement table) lives in `packages/protocol`. See `reference-model.md`.
+
 ## Goals
 
 1. A result that settles as `reproduced` or `not_reproduced` should be one that anyone can rerun and get the same answer.

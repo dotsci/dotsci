@@ -47,7 +47,7 @@ Every result lands as `reproduced` or `not_reproduced`, with the full run attach
 │   ├── run.schema.json
 │   ├── lab-message.schema.json
 │   └── examples/
-├── docs/                 Architecture, protocol, mechanism, threat model, manifest spec, roadmap
+├── docs/                 Architecture, protocol, mechanism, threat model, manifest spec, claim guide, roadmap
 ├── packages/
 │   └── runner/           Python toolkit for runners and challengers
 ├── sandbox/              Container isolation settings and reference images

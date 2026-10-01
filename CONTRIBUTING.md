@@ -6,7 +6,7 @@ Thanks for helping. DotSci is early, so the most useful contributions are the on
 
 - **Manifest and run specs** in `spec/`: ambiguities, missing fields, and cases the schema cannot express.
 - **Runner toolkit** in `packages/runner`: bug fixes, tests, and support for more tolerance rules.
-- **Sample claims**: a manifest for a published result with public data and public code, added under `spec/examples/`.
+- **Sample claims**: a manifest for a published result with public data and public code, added under `examples/`. See `docs/writing-a-claim.md`.
 - **Docs** in `docs/`: anything unclear or out of date.
 
 ## Ground rules

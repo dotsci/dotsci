@@ -10,6 +10,7 @@ from pathlib import Path
 
 from . import __version__
 from .compare import REPRODUCED, compare_targets
+from .dispute import AGREE, diff_runs, render, validate_run_record
 from .hashing import verify_inputs
 from .job import preflight, run_job
 from .manifest import ManifestError, load_manifest, manifest_hash
@@ -53,6 +54,24 @@ def _cmd_hash(args: argparse.Namespace) -> int:
     digest = manifest_hash(manifest)
     print(f"0x{digest}" if args.bytes32 else f"sha256:{digest}")
     return 0
+
+
+def _cmd_diff(args: argparse.Namespace) -> int:
+    records = []
+    for path in (args.run_a, args.run_b):
+        try:
+            record = json.loads(Path(path).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"cannot read {path}: {exc}", file=sys.stderr)
+            return 1
+        errors = validate_run_record(record)
+        if errors:
+            print(f"{path} is not a valid run record:\n" + "\n".join(errors), file=sys.stderr)
+            return 1
+        records.append(record)
+    evidence = diff_runs(records[0], records[1])
+    print(json.dumps(evidence.to_dict(), indent=2) if args.json else render(evidence))
+    return 0 if evidence.verdict == AGREE else 1
 
 
 def _cmd_verify_inputs(args: argparse.Namespace) -> int:
@@ -200,6 +219,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_hash.add_argument("manifest")
     p_hash.add_argument("--bytes32", action="store_true", help="print as 0x-prefixed hex, ready for a contract call")
     p_hash.set_defaults(func=_cmd_hash)
+
+    p_diff = sub.add_parser("diff", help="compare two run records of the same claim and state exactly where they differ")
+    p_diff.add_argument("run_a", help="for example the runner's run record")
+    p_diff.add_argument("run_b", help="for example the challenger's run record")
+    p_diff.add_argument("--json", action="store_true", help="print machine readable evidence")
+    p_diff.set_defaults(func=_cmd_diff)
 
     p_inputs = sub.add_parser("verify-inputs", help="check input file hashes against a manifest")
     p_inputs.add_argument("manifest")

@@ -6,7 +6,10 @@ import argparse
 import json
 import sys
 
+from fractions import Fraction
+
 from .commit import CommitError, InclusionProof, commit_directory
+from .incentives import min_runner_stake
 
 
 def _cmd_commit(args: argparse.Namespace) -> int:
@@ -47,6 +50,26 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     return 1
 
 
+def _cmd_explore(args: argparse.Namespace) -> int:
+    try:
+        probabilities = [Fraction(x.strip()) for x in args.p_catch.split(",") if x.strip()]
+    except ValueError:
+        print("--p-catch must be a comma separated list of numbers between 0 and 1", file=sys.stderr)
+        return 1
+    if not probabilities or any(not 0 <= p <= 1 for p in probabilities):
+        print("--p-catch values must be between 0 and 1", file=sys.stderr)
+        return 1
+    w = Fraction(args.wrongful_loss)
+    print(f"bounty={args.bounty} honest_cost={args.honest_cost} runner_slash_bps={args.runner_slash_bps} wrongful_loss={float(w)}")
+    print(f"{'p_catch':>8}  {'min runner stake':>18}")
+    for p in probabilities:
+        stake = min_runner_stake(args.bounty, args.honest_cost, p, args.runner_slash_bps, w)
+        shown = "cannot deter" if stake is None else str(stake)
+        print(f"{float(p):>8.3f}  {shown:>18}")
+    print("These are thresholds for an example, not recommended values.")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="dotsci-protocol", description="DotSci run commitments")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -61,6 +84,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("root")
     p.add_argument("proof", help="JSON file written by the prove command")
     p.set_defaults(func=_cmd_verify)
+    p = sub.add_parser("explore", help="minimum runner stake that makes honest running beat faking, for given odds")
+    p.add_argument("--bounty", type=int, required=True)
+    p.add_argument("--honest-cost", type=int, required=True)
+    p.add_argument("--p-catch", required=True, help="comma separated chances a fake result is caught, for example 0.1,0.3,0.5")
+    p.add_argument("--runner-slash-bps", type=int, required=True)
+    p.add_argument("--wrongful-loss", default="0", help="chance an honest run is wrongly overturned (default 0)")
+    p.set_defaults(func=_cmd_explore)
     args = parser.parse_args(argv)
     return args.func(args)
 

@@ -9,6 +9,7 @@ What it does today:
 - Checks that a code directory is a clean checkout of the pinned commit
 - Runs a manifest's entrypoint inside a locked-down container (see `../../sandbox/README.md`)
 - Compares rerun values to published targets using each target's tolerance
+- Compares two run records of the same claim and states exactly where they differ (`diff`)
 - Writes JSONL logs in the DotSci format
 - Produces a run record
 
@@ -29,6 +30,7 @@ pytest
 dotsci-runner validate MANIFEST
 dotsci-runner verify-inputs MANIFEST --data-dir DIR
 dotsci-runner compare MANIFEST --results RESULTS.json [--job-id ID] [--role runner|challenger] [--out RUN.json]
+dotsci-runner diff RUN_A.json RUN_B.json [--json]
 dotsci-runner run MANIFEST --code-dir DIR --data-dir DIR --out-dir DIR --image REPO@sha256:DIGEST [--dry-run] [--record RUN.json]
 ```
 
@@ -59,6 +61,7 @@ comparisons, outcome = compare_targets(manifest["targets"], {"primary_effect": 0
 - `compare.py`: tolerance rules and outcome
 - `sandbox.py`: docker command construction, image and checkout checks, execution
 - `job.py`: the end to end run flow
+- `dispute.py`: compare two run records and produce dispute evidence
 - `record.py`: run record builder
 - `runlog.py`: JSONL logging
 - `cli.py`: command line

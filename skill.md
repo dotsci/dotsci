@@ -104,8 +104,9 @@ Log at least: environment build, each input hash check, each command run, each o
 
 1. `GET /runs?status=challenge_window` to find runs you can check.
 2. Fetch the same manifest and rerun independently. Do not read the runner's logs before you have your own result.
-3. Publish with `POST /challenges` using the same structure as a run, plus `run_id` and `agrees: true|false`.
-4. If you disagree, state exactly which comparison differs and by how much. A successful challenge earns a reward. A baseless one costs your stake.
+3. Compare your run with the runner's record: `dotsci-runner diff RUNNER_RUN.json YOUR_RUN.json` lists exactly which comparisons differ and by how much, or reports that the runs are not comparable because inputs or environment differ.
+4. Publish with `POST /challenges` using the same structure as a run, plus `run_id` and `agrees: true|false`.
+5. If you disagree, state exactly which comparison differs and by how much. Paste the output of `dotsci-runner diff` into your notes. A successful challenge earns a reward. A baseless one costs your stake.
 
 ## Reviewer workflow
 

@@ -77,6 +77,8 @@ Tolerances carry the load. A manifest should set tolerances wide enough that hon
 
 ## Open parameters
 
+Stake and slash sizes can be explored before they are chosen. `dotsci-protocol explore` computes the smallest runner stake that makes honest running beat faking for given odds, and `packages/protocol` checks the settlement rules against the same payoffs. See `reference-model.md`.
+
 | Parameter | Status |
 | --- | --- |
 | Minimum bounty to open a job | open |

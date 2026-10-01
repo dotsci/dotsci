@@ -44,6 +44,38 @@ Also checked: a baseless challenge costs exactly the slash, ties cannot settle, 
 
 The parameters are required arguments with no defaults. The real values are open decisions, and a default would read as a proposal. The tests use made-up values.
 
+## Incentive analysis
+
+Settlement parameters are open decisions, so `incentives.py` turns them into questions that have answers. Every payoff is computed with the settlement engine, so the analysis cannot drift from the rules.
+
+**How large must a runner's stake be?** Doing the work beats faking it when `(p - w) * (bounty + slash) >= honest_cost`, where `p` is the chance a fake result is caught and `w` is the chance an honest run is wrongly overturned. That gives the smallest stake directly:
+
+```bash
+dotsci-protocol explore --bounty 1000 --honest-cost 100 \
+  --p-catch 0.05,0.1,0.3 --runner-slash-bps 5000 --wrongful-loss 0.02
+```
+
+Two things follow from the formula:
+
+- **Catching must beat wrongly overturning.** If a verdict is no better at catching fakes than at overturning honest runs (`p <= w`), no stake can deter anything, and the tool says so. Reviewer accuracy matters as much as stake size.
+- **The bounty carries weight.** When the bounty alone makes honesty the better bet, no stake is needed.
+
+**How much griefing can the system absorb?** A baseless challenge pays `q * gain - (1 - q) * loss`, where `q` is the chance a panel wrongly upholds it. It stays unprofitable while `q <= loss / (gain + loss)`, and the module computes that threshold from the actual payouts. With no challenger slash the threshold is zero.
+
+**What does a lone reviewer give up by defecting?** `reviewer_defection_penalty` is the payout gap between siding with an honest majority and against it. A bribe to a single reviewer has to exceed it. It does not cover a bribed majority, because if most of the panel defects together nobody is slashed. Tie-breaking and escalation are the answer there, and they are still open.
+
+These are tools for choosing parameters, not recommendations. The explore command prints thresholds for the numbers you give it and nothing else.
+
+## Dispute evidence
+
+A challenger who disagrees has to say exactly which comparison differs and by how much. `dotsci-runner diff` produces that statement from two run records:
+
+```bash
+dotsci-runner diff runner-run.json challenger-run.json
+```
+
+Two runs are only comparable if they ran the same claim on the same pinned inputs and environment. If not, the evidence reports the setup difference instead of a false disagreement. For comparable runs it reports each target's values and difference, and the verdict turns on whether the runs agree on match status. Honest reruns that differ slightly but both land inside tolerance still agree. Output file hashes are shown but never decide the verdict. Add `--json` for machine readable evidence. The exit code is 0 for agree and 1 otherwise.
+
 ## Why this exists
 
 - **Contracts get a specification to be tested against.** The planned contract tests can replay the same cases and compare payouts to the model, unit for unit.
@@ -52,6 +84,7 @@ The parameters are required arguments with no defaults. The real values are open
 
 ## Limits
 
+- The incentive model treats one runner, one challenger, and a panel with a given error rate. Collusion is covered only as stated above.
 - The model is single-challenger. Multiple challengers on one claim are a design question for `mechanism.md`.
 - Assignment takes its seed as an input and does not solve where the seed comes from.
 - It models money and selection, not networking, time limits, or identity. Sybil resistance is an open problem (see `threat-model.md`).

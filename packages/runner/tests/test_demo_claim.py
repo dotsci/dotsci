@@ -29,3 +29,22 @@ def test_demo_analysis_reproduces_targets(tmp_path):
     manifest = load_manifest(DEMO / "manifest.json")
     _, outcome = compare_targets(manifest["targets"], values)
     assert outcome == "reproduced"
+
+
+def test_demo_fails_when_a_published_value_is_wrong(tmp_path):
+    env = dict(os.environ, DOTSCI_DATA_DIR=str(DEMO / "data"), DOTSCI_OUT_DIR=str(tmp_path))
+    subprocess.run([sys.executable, str(DEMO / "analysis.py")], check=True, env=env)
+    values = json.loads((tmp_path / "results.json").read_text())
+    manifest = load_manifest(DEMO / "manifest.json")
+    for target in manifest["targets"]:
+        if target["name"] == "mean_difference":
+            target["published"] = 0.9
+    _, outcome = compare_targets(manifest["targets"], values)
+    assert outcome == "not_reproduced"
+
+
+def test_demo_data_change_is_detected(tmp_path):
+    manifest = load_manifest(DEMO / "manifest.json")
+    (tmp_path / "measurements.csv").write_text("group,value\ncontrol,1.0\n")
+    checks = verify_inputs(manifest, tmp_path)
+    assert checks and not any(c.ok for c in checks)

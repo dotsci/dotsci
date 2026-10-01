@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from importlib import resources
 from pathlib import Path
@@ -46,3 +47,25 @@ def load_manifest(path: str | Path) -> dict[str, Any]:
     if errors:
         raise ManifestError("manifest failed validation:\n" + "\n".join(errors))
     return data
+
+
+def canonical_json(manifest: dict[str, Any]) -> bytes:
+    """Serialize a manifest the same way every time.
+
+    Keys are sorted, separators are compact, text is UTF-8, and NaN or infinity
+    are rejected. Two manifests with the same content produce the same bytes
+    regardless of key order or whitespace in the source file.
+    """
+    text = json.dumps(
+        manifest,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    )
+    return text.encode("utf-8")
+
+
+def manifest_hash(manifest: dict[str, Any]) -> str:
+    """SHA-256 of the canonical manifest, as 64 lowercase hex characters."""
+    return hashlib.sha256(canonical_json(manifest)).hexdigest()

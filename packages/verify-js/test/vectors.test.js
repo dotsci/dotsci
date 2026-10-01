@@ -4,12 +4,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import {
+// DOTSCI_VERIFY_ENTRY lets CI replay the same vectors against the single file bundle.
+const lib = await import(process.env.DOTSCI_VERIFY_ENTRY ?? "../src/index.js");
+const {
   sha256, toHex, fromHex, utf8, canonicalizeText, manifestHash,
   leafHash, merkleRoot, auditPath, verifyInclusion, fileLeaf, commitFiles, proveFile, verifyFileProof, CommitError,
   Stream, uniformBelow, draw, verifyDraw, AssignmentError,
   settle, SettlementError, TieError,
-} from "../src/index.js";
+} = lib;
 
 const dir = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "spec", "vectors");
 const load = (name) => JSON.parse(readFileSync(join(dir, name), "utf8"));

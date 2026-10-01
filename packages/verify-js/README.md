@@ -20,6 +20,10 @@ settle(caseObject, paramsObject);       // BigInt payouts, conservation checked
 | `assignment` | Seeded word stream, rejection sampling, draws |
 | `settlement` | Integer basis point settlement over `BigInt` |
 
+## Using it in a web page
+
+`dist/dotsci-verify.mjs` is the whole library in one file with no imports. Copy it into a project, or load it from a URL, and import the names you need. Rebuild it after any change to `src` with `npm run build`. CI fails if it is stale, and replays the vectors against it.
+
 ## Why not JSON.parse and JSON.stringify
 
 They cannot reproduce the reference hash. `JSON.parse` loses the difference between `5` and `5.0`, `JSON.stringify` writes `1e-7` where Python writes `1e-07`, and the default sort orders keys by UTF-16 unit instead of code point. So `canonical.js` parses the text itself, keeps each number's kind, and formats floats with Python's rules. Pass it the manifest as text, not as a parsed object.

@@ -52,6 +52,11 @@ jobs:
       - name: Test
         working-directory: packages/verify-js
         run: node --test test/*.test.js
+      - name: Single file bundle is current and passes the vectors
+        working-directory: packages/verify-js
+        run: |
+          node scripts/bundle.mjs --check
+          DOTSCI_VERIFY_ENTRY=../dist/dotsci-verify.mjs node --test test/vectors.test.js
 
   protocol-tests:
     runs-on: ubuntu-latest

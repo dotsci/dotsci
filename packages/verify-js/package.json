@@ -7,7 +7,9 @@
   "exports": "./src/index.js",
   "license": "MIT",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "build": "node scripts/bundle.mjs",
+    "test:bundle": "node scripts/bundle.mjs --check && DOTSCI_VERIFY_ENTRY=../dist/dotsci-verify.mjs node --test test/vectors.test.js"
   },
   "engines": {
     "node": ">=20"

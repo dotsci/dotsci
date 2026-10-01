@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dots.science/spec/run.schema.json",
+  "title": "DotSci run record",
+  "description": "Published by a runner or challenger after executing a manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_version",
+    "job_id",
+    "claim_id",
+    "input_hashes",
+    "output_hashes",
+    "environment",
+    "comparisons",
+    "outcome"
+  ],
+  "properties": {
+    "spec_version": { "type": "string", "const": "0.1" },
+    "job_id": { "type": "string", "minLength": 1 },
+    "claim_id": { "type": "string", "minLength": 1 },
+    "role": { "type": "string", "enum": ["runner", "challenger"] },
+    "input_hashes": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    },
+    "output_hashes": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["image_digest"],
+      "properties": {
+        "image_digest": { "type": "string" },
+        "seed": { "type": "integer" }
+      }
+    },
+    "comparisons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "published", "rerun", "difference", "tolerance", "match"],
+        "properties": {
+          "name": { "type": "string" },
+          "published": { "type": "number" },
+          "rerun": { "type": "number" },
+          "difference": { "type": "number" },
+          "tolerance": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "value"],
+            "properties": {
+              "type": { "type": "string", "enum": ["absolute", "relative"] },
+              "value": { "type": "number" }
+            }
+          },
+          "match": { "type": "boolean" }
+        }
+      }
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["reproduced", "not_reproduced", "spec_issue", "input_mismatch"]
+    },
+    "logs_uri": { "type": "string" },
+    "notes": { "type": "string" }
+  }
+}

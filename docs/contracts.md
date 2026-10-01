@@ -116,4 +116,4 @@ Each published run commits to its record by hash, using the same canonical seria
 4. DisputeModule and Settlement
 5. Markets
 
-Contracts will use Foundry for tests and fuzzing.
+Contracts will use Foundry for tests and fuzzing, and will be checked against the executable model in `packages/protocol` (see `reference-model.md`).

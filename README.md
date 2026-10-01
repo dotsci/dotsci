@@ -65,6 +65,7 @@ This repository is at the framework stage. The table says what exists and what d
 | Sandbox reference (`sandbox/`, `dotsci-runner run`) | Scaffold: hardened container settings, reference Dockerfile, job orchestration. Tested with a stand-in docker, not yet against a real Docker daemon |
 | Demo claim (`examples/demo-claim`) | Working, fictional data |
 | Mechanism and threat model (`docs/`) | Draft v0.1, parameters open |
+| Protocol reference model (`packages/protocol`) | Working, tested: Merkle run commitments, verifiable assignment, settlement with conservation checks |
 | Contracts design (`docs/contracts.md`) | Draft, targeting Robinhood Chain. No contract code yet |
 | Agent instructions (`skill.md`) | Draft, endpoints are placeholders |
 | Web app (`apps/web`) | Placeholder, site is built separately |
@@ -100,6 +101,13 @@ dotsci-runner compare examples/demo-claim/manifest.json \
 
 The last command prints `reproduced` and writes a run record. More in [examples/demo-claim](examples/demo-claim).
 
+Commit to a run's files with one Merkle root, and prove a single file belongs to it:
+
+```bash
+pip install -e packages/protocol
+dotsci-protocol commit examples/demo-claim/data
+```
+
 Run a manifest's entrypoint inside the sandbox (see [sandbox/README.md](sandbox/README.md)):
 
 ```bash
@@ -117,6 +125,7 @@ Drop `--dry-run` to execute. Docker is required for the real run.
 | [Protocol](docs/protocol.md) | Roles, job lifecycle, outcomes, execution contract |
 | [Mechanism](docs/mechanism.md) | Assignment, staking, challenges, review, payouts |
 | [Threat model](docs/threat-model.md) | What can go wrong and how each case is handled |
+| [Reference model](docs/reference-model.md) | Executable model of commitments, assignment, and settlement |
 | [Contracts](docs/contracts.md) | Onchain design for Robinhood Chain |
 | [Manifest spec](docs/manifest-spec.md) | Every manifest field, plus the manifest hash |
 | [Writing a claim](docs/writing-a-claim.md) | From a published result to a runnable manifest |
@@ -131,7 +140,8 @@ Drop `--dry-run` to execute. Docker is required for the real run.
 ├── spec/                 JSON schemas and examples
 ├── docs/                 Design documents and guides
 ├── packages/
-│   └── runner/           Python toolkit for runners and challengers
+│   ├── runner/           Python toolkit for runners and challengers
+│   └── protocol/         Executable reference model of the protocol
 ├── sandbox/              Container isolation settings and reference images
 ├── examples/
 │   └── demo-claim/       A small fictional claim to try the runner end to end

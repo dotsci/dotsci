@@ -116,4 +116,4 @@ Each published run commits to its record by hash, using the same canonical seria
 4. DisputeModule and Settlement
 5. Markets
 
-Contracts will use Foundry for tests and fuzzing, and will be checked against the executable model in `packages/protocol` (see `reference-model.md`).
+Contracts will use Foundry for tests and fuzzing, and will be checked against the executable model in `packages/protocol` (see `reference-model.md`). The byte level rules (manifest hash, Merkle roots and proofs, assignment, settlement arithmetic) are published as JSON in `spec/vectors`, and a contract is expected to reproduce every vector, including the invalid ones. Amounts in those files are decimal strings so `uint256` values are exact.

@@ -18,6 +18,7 @@ All notable changes to DotSci are listed here. The project is at the framework s
 - Dispute evidence: `dotsci-runner diff` compares two run records and states exactly which comparison differs and by how much
 - Incentive analysis: `dotsci-protocol explore` finds the smallest runner stake that makes honest running beat faking, plus griefing and reviewer defection thresholds, computed with the settlement engine
 - Tolerance calibration: `dotsci-runner calibrate` summarizes repeated reruns of one claim, reports how much honest reruns vary, flags a `spec_issue` when they disagree, and suggests the smallest tolerance that would have matched every rerun
+- Conformance vectors in `spec/vectors`: manifest hashing, Merkle commitments, assignment and settlement as language neutral JSON, replayed by the reference tests, by an independent standard library verifier, and checked for drift in CI
 - Animated banner and typing SVGs for the README
 - Docs: architecture, protocol, mechanism, threat model, manifest spec, roadmap, guide to writing a claim
 - CI running the runner tests on Python 3.11 and 3.12

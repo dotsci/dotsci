@@ -1,0 +1,178 @@
+{
+ "version": 1,
+ "description": "Canonical JSON and SHA-256 of a manifest. canonical is the exact UTF-8 text that is hashed.",
+ "rules": [
+  "keys sorted by Unicode code point, recursively",
+  "separators are ',' and ':' with no whitespace",
+  "text is UTF-8 and non-ASCII characters are not escaped",
+  "NaN and infinity are rejected",
+  "numbers follow the shortest round-trip form of Python's json module, so 5.0 stays 5.0 and 1e-07 stays 1e-07"
+ ],
+ "cases": [
+  {
+   "name": "empty_object",
+   "manifest": {},
+   "canonical": "{}",
+   "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+   "name": "key_order_ignored",
+   "manifest": {
+    "b": 1,
+    "a": {
+     "d": [
+      3,
+      2,
+      1
+     ],
+     "c": null
+    }
+   },
+   "canonical": "{\"a\":{\"c\":null,\"d\":[3,2,1]},\"b\":1}",
+   "sha256": "99292fc65b1416433c73754bd2133c24f100c4da791e825377abb6756eeb69ae"
+  },
+  {
+   "name": "key_order_ignored_reversed",
+   "manifest": {
+    "a": {
+     "c": null,
+     "d": [
+      3,
+      2,
+      1
+     ]
+    },
+    "b": 1
+   },
+   "canonical": "{\"a\":{\"c\":null,\"d\":[3,2,1]},\"b\":1}",
+   "sha256": "99292fc65b1416433c73754bd2133c24f100c4da791e825377abb6756eeb69ae"
+  },
+  {
+   "name": "unicode_is_not_escaped",
+   "manifest": {
+    "name": "Zürich ångström 研究"
+   },
+   "canonical": "{\"name\":\"Zürich ångström 研究\"}",
+   "sha256": "95cfdf91f53f314c24f2b1d510e9ede2ac4ae8400191876bdacaf539676a3356"
+  },
+  {
+   "name": "string_escapes",
+   "manifest": {
+    "s": "quote \" backslash \\ newline \n tab \t"
+   },
+   "canonical": "{\"s\":\"quote \\\" backslash \\\\ newline \\n tab \\t\"}",
+   "sha256": "7a475e86b9a0007817692d7e8a99d392c802c5dc79e02aca62f655502e50ce14"
+  },
+  {
+   "name": "integers",
+   "manifest": {
+    "zero": 0,
+    "negative": -7,
+    "large": 9007199254740993
+   },
+   "canonical": "{\"large\":9007199254740993,\"negative\":-7,\"zero\":0}",
+   "sha256": "23eb24a8ea3b862ba95d78532b7c51e8ee2ce8178eca6e555ad8ae6e3d7a99cd"
+  },
+  {
+   "name": "floats_use_shortest_repr",
+   "manifest": {
+    "a": 0.1,
+    "b": 1e-07,
+    "c": 1e+22,
+    "d": 5.0,
+    "e": 0.63
+   },
+   "canonical": "{\"a\":0.1,\"b\":1e-07,\"c\":1e+22,\"d\":5.0,\"e\":0.63}",
+   "sha256": "845a34509e0df912668de6750866c75df4264b99897521ec2a65d9767f455b81"
+  },
+  {
+   "name": "nested_arrays",
+   "manifest": {
+    "x": [
+     [
+      1,
+      2
+     ],
+     [],
+     [
+      {
+       "k": "v"
+      }
+     ]
+    ]
+   },
+   "canonical": "{\"x\":[[1,2],[],[{\"k\":\"v\"}]]}",
+   "sha256": "a010d1a2c83cc28c6bba8f35247d63dbe836f665349d1f609e591f4af481c7dc"
+  },
+  {
+   "name": "booleans_and_null",
+   "manifest": {
+    "t": true,
+    "f": false,
+    "n": null
+   },
+   "canonical": "{\"f\":false,\"n\":null,\"t\":true}",
+   "sha256": "22e00dc2f7b01420f940fbdbfbdf34fa0667cc6500186495023ba37722cbd05e"
+  },
+  {
+   "name": "demo_claim_manifest",
+   "manifest": {
+    "spec_version": "0.1",
+    "claim_id": "demo-0001",
+    "paper": {
+     "title": "Demo claim: a fictional treatment effect (not a real paper)",
+     "authors": [
+      "DotSci"
+     ],
+     "field": "Demonstration"
+    },
+    "datasets": [
+     {
+      "name": "measurements.csv",
+      "url": "https://github.com/dotsci/dotsci/raw/main/examples/demo-claim/data/measurements.csv",
+      "sha256": "48921b05d0e182f95e3d8375bc6ed478d642193aacc17ef62cb4a30f5a32c51b",
+      "license": "MIT"
+     }
+    ],
+    "code": {
+     "repository": "https://github.com/dotsci/dotsci",
+     "commit": "0000000"
+    },
+    "environment": {
+     "image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+     "dependencies": {
+      "python": "3.11"
+     },
+     "seed": 0,
+     "timeout_seconds": 300
+    },
+    "entrypoint": {
+     "command": "python analysis.py",
+     "working_dir": "."
+    },
+    "targets": [
+     {
+      "name": "mean_difference",
+      "published": 0.63,
+      "source": "Demo: treatment minus control mean",
+      "tolerance": {
+       "type": "absolute",
+       "value": 0.05
+      }
+     },
+     {
+      "name": "sample_size",
+      "published": 200,
+      "source": "Demo: total rows",
+      "tolerance": {
+       "type": "absolute",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "canonical": "{\"claim_id\":\"demo-0001\",\"code\":{\"commit\":\"0000000\",\"repository\":\"https://github.com/dotsci/dotsci\"},\"datasets\":[{\"license\":\"MIT\",\"name\":\"measurements.csv\",\"sha256\":\"48921b05d0e182f95e3d8375bc6ed478d642193aacc17ef62cb4a30f5a32c51b\",\"url\":\"https://github.com/dotsci/dotsci/raw/main/examples/demo-claim/data/measurements.csv\"}],\"entrypoint\":{\"command\":\"python analysis.py\",\"working_dir\":\".\"},\"environment\":{\"dependencies\":{\"python\":\"3.11\"},\"image_digest\":\"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\"seed\":0,\"timeout_seconds\":300},\"paper\":{\"authors\":[\"DotSci\"],\"field\":\"Demonstration\",\"title\":\"Demo claim: a fictional treatment effect (not a real paper)\"},\"spec_version\":\"0.1\",\"targets\":[{\"name\":\"mean_difference\",\"published\":0.63,\"source\":\"Demo: treatment minus control mean\",\"tolerance\":{\"type\":\"absolute\",\"value\":0.05}},{\"name\":\"sample_size\",\"published\":200,\"source\":\"Demo: total rows\",\"tolerance\":{\"type\":\"absolute\",\"value\":0}}]}",
+   "sha256": "cc86e467851950c8e59afde941652ade85bcb5a88c885a646ccf6bc50a40ef64"
+  }
+ ]
+}

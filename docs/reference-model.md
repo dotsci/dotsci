@@ -92,6 +92,10 @@ The runs must share the claim, the pinned inputs, the image digest and the seed,
 
 It also prints the smallest tolerance under which every observed rerun would match the published value, times `--margin` (default 2, minimum 1). With fewer than five reruns that number is a lower bound and the report says so. Calibration never edits a manifest. The tolerance stays part of the claim and a human choice, as described in [writing-a-claim](writing-a-claim.md).
 
+## Conformance vectors
+
+The rules a contract or another client must reproduce are published as JSON in [`spec/vectors`](../spec/vectors): manifest hashes, Merkle roots and proofs (including invalid ones), assignment draws, and settlement outcomes. The reference tests replay them, and `spec/vectors/verify.py` replays them with a separate standard library implementation. The planned Solidity contracts are tested against the same files, so a port is correct when it reproduces the vectors, not when it resembles the Python.
+
 ## Why this exists
 
 - **Contracts get a specification to be tested against.** The planned contract tests can replay the same cases and compare payouts to the model, unit for unit.

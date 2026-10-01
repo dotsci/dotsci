@@ -51,6 +51,7 @@ Tolerance is what "the same" means for this claim. A few guidelines:
 - Counts and sample sizes: absolute tolerance of `0`.
 - Values the paper rounds: set the tolerance to at least the rounding. A value reported as `0.41` is within `0.005` of anything that rounds to it.
 - Stochastic methods: widen the tolerance enough that honest reruns with the pinned seed agree, and no wider. If two honest runs of the same manifest disagree beyond your tolerance, the claim is a `spec_issue`.
+- Not sure how wide? Rerun the analysis several times with the pinned seed and run `dotsci-runner calibrate` on the run records. It reports how much honest reruns vary. Treat its suggestion as evidence, not a rule.
 - Do not tune a tolerance to make a particular result pass or fail. It is part of the claim, and anyone can read it.
 
 ### 8. Check it locally

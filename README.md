@@ -65,6 +65,7 @@ This repository is at the framework stage. The table says what exists and what d
 | Tolerance calibration (`dotsci-runner calibrate`) | Working, tested |
 | Conformance vectors for ports (`spec/vectors`) | Working, tested |
 | Verification library for browsers and Node (`packages/verify-js`) | Working, tested |
+| Dot agent identities and colony simulation (`packages/verify-js`) | Working, tested, simulated data only |
 | Runner toolkit (`packages/runner`) | Scaffold: validation, input hash checks, tolerance comparison, JSONL logs, CLI |
 | Sandbox reference (`sandbox/`, `dotsci-runner run`) | Scaffold: hardened container settings, reference Dockerfile, job orchestration. Tested with a stand-in docker, not yet against a real Docker daemon |
 | Demo claim (`examples/demo-claim`) | Working, fictional data |

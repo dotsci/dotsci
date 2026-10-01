@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DotSci colony (simulation)</title>
+<style>
+  :root { --bg:#0a0e14; --panel:#10161f; --line:#1b2430; --text:#d7e4ee; --dim:#7f93a6; --teal:#57c5d2; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 ui-sans-serif,system-ui,sans-serif; }
+  header { padding:16px 20px; border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:16px; margin:0; font-weight:600; }
+  .sim { color:#ffc46b; border:1px solid #5a4620; padding:2px 8px; border-radius:999px; font-size:12px; }
+  main { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; padding:16px 20px; }
+  @media (max-width: 900px) { main { grid-template-columns:1fr; } }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px; }
+  svg.stage { width:100%; height:auto; display:block; }
+  label, input, button { font:inherit; color:inherit; }
+  input, button { background:#0d131b; border:1px solid var(--line); border-radius:8px; padding:6px 10px; }
+  button { cursor:pointer; } button:hover { border-color:var(--teal); }
+  #feed { list-style:none; margin:0; padding:0; max-height:360px; overflow:auto; font-size:13px; }
+  #feed li { padding:6px 0; border-bottom:1px solid var(--line); }
+  #feed small { color:var(--dim); display:block; }
+  table { width:100%; border-collapse:collapse; font-size:13px; } td { padding:3px 0; } td:last-child { text-align:right; font-variant-numeric:tabular-nums; }
+  .dim { color:var(--dim); } .mono { font-family:ui-monospace,monospace; }
+  #detail { min-height:84px; display:flex; gap:12px; align-items:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>DotSci colony</h1>
+  <span class="sim">Simulation: generated agents and claims, real assignment and settlement code</span>
+  <span style="flex:1"></span>
+  <label>seed <input id="seed" value="dotsci" size="10"></label>
+  <label>dots <input id="agents" type="number" value="24" min="6" max="200" style="width:70px"></label>
+  <button id="go">Run</button>
+  <button id="pause">Pause</button>
+</header>
+<main>
+  <section class="card">
+    <svg class="stage" id="stage" viewBox="0 0 1000 600" aria-label="Colony of dot agents"></svg>
+    <div id="detail" class="dim">Click a dot.</div>
+  </section>
+  <aside style="display:grid;gap:16px;align-content:start">
+    <section class="card"><strong>Events</strong><ul id="feed"></ul></section>
+    <section class="card"><strong>Net balance (simulated units)</strong><table id="board"></table></section>
+    <section class="card dim" id="meta"></section>
+  </aside>
+</main>
+<script type="module">
+import { runColony, renderDot, agentPosition, dotStateAt, netAt } from "../dist/dotsci-verify.mjs";
+
+const $ = (id) => document.getElementById(id);
+let colony, cursor, timer, paused = false, selected = null;
+const SIZE = 72;
+
+const TEXT = {
+  claim_listed: (e, n) => `${n(e.agents[0])} listed ${e.data.title}`,
+  runner_assigned: (e, n) => `${n(e.agents[0])} drawn as runner (${e.data.candidates.length} eligible)`,
+  run_completed: (e, n) => `${n(e.agents[0])} reports ${e.data.outcome.replace("_", " ")}`,
+  challenged: (e, n) => `${n(e.agents[0])} challenges the result`,
+  confirmed: (e, n) => `${n(e.agents[0])} confirms the result`,
+  panel_drawn: (e) => `panel of ${e.agents.length} drawn`,
+  vote: (e, n) => `${n(e.agents[0])} votes ${e.data.vote}`,
+  settled: (e) => `settled: ${e.data.kind}, verdict ${e.data.verdict}`,
+  claim_unassigned: () => "no eligible runner",
+  dispute_unresolved: () => "no independent panel available, claim relisted",
+};
+
+function start() {
+  clearInterval(timer);
+  colony = runColony({ seed: $("seed").value || "dotsci", agents: Number($("agents").value) || 24, claims: 14 });
+  cursor = -1; selected = null;
+  $("feed").innerHTML = "";
+  $("meta").innerHTML = `seed <span class="mono">${colony.seedHex.slice(0, 16)}</span><br>value conserved: <strong>${colony.invariant.holds ? "yes" : "NO"}</strong> (${colony.invariant.end} units)<br>Every draw is re-verifiable with <span class="mono">verifyDraw</span>.`;
+  draw();
+  timer = setInterval(() => { if (!paused) step(); }, 450);
+}
+
+const name = (id) => colony.agents.find((a) => a.id === id).identity.name;
+
+function step() {
+  if (cursor >= colony.events.length - 1) return;
+  cursor += 1;
+  const e = colony.events[cursor];
+  const li = document.createElement("li");
+  li.innerHTML = `${(TEXT[e.type] ?? (() => e.type))(e, name)}<small>${e.claim} · t+${e.t}s</small>`;
+  $("feed").prepend(li);
+  draw(e);
+}
+
+function draw(current) {
+  const n = colony.agents.length;
+  const active = new Set(current ? current.agents : []);
+  const size = n > 80 ? 40 : n > 40 ? 54 : SIZE;
+  $("stage").innerHTML = colony.agents.map((a, i) => {
+    const p = agentPosition(i, n, 1000, 600, 52);
+    const state = dotStateAt(colony, a.id, cursor);
+    const ring = active.has(a.id) ? `<circle r="${size * 0.62}" fill="none" stroke="#57c5d2" stroke-width="2" opacity="0.8"/>` : "";
+    const sel = selected === a.id ? `<circle r="${size * 0.7}" fill="none" stroke="#fff" stroke-dasharray="4 4" opacity="0.7"/>` : "";
+    return `<g transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)})" data-id="${a.id}" style="cursor:pointer">${ring}${sel}<g transform="translate(${-size / 2} ${-size / 2})">${renderDot(a.identity, { size, state })}</g></g>`;
+  }).join("");
+  const net = netAt(colony, cursor);
+  $("board").innerHTML = colony.agents.map((a) => ({ a, v: BigInt(net[a.id]) })).sort((x, y) => (y.v > x.v ? 1 : y.v < x.v ? -1 : 0)).slice(0, 8)
+    .map(({ a, v }) => `<tr><td>${a.identity.name}</td><td>${v >= 0n ? "+" : ""}${v}</td></tr>`).join("");
+  if (selected) detail(selected);
+}
+
+function detail(id) {
+  const a = colony.agents.find((x) => x.id === id);
+  $("detail").innerHTML = `${renderDot(a.identity, { size: 76, state: dotStateAt(colony, id, cursor) })}<div><strong>${a.identity.name}</strong> <span class="dim mono">${a.id}</span><br>
+    <span class="dim">${a.identity.hue.name} · ${a.identity.capabilities.join(", ")} · ${a.operator}</span><br>
+    runs ${a.stats.runs} · reproduced ${a.stats.reproduced} · not reproduced ${a.stats.notReproduced} · panels ${a.stats.panels} · net ${a.net}</div>`;
+}
+
+$("stage").addEventListener("click", (ev) => {
+  const g = ev.target.closest("[data-id]");
+  if (!g) return;
+  selected = g.dataset.id; detail(selected); draw(colony.events[cursor]);
+});
+$("go").onclick = start;
+$("pause").onclick = (ev) => { paused = !paused; ev.target.textContent = paused ? "Resume" : "Pause"; };
+start();
+</script>
+</body>
+</html>

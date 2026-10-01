@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const order = ["sha256", "canonical", "merkle", "assignment", "settlement"];
+const order = ["sha256", "canonical", "merkle", "assignment", "settlement", "dots", "colony"];
 const exported = new Set();
 let body = "";
 

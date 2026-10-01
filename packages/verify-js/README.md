@@ -19,6 +19,24 @@ settle(caseObject, paramsObject);       // BigInt payouts, conservation checked
 | `merkle` | RFC 6962 trees, file commitments, inclusion proofs |
 | `assignment` | Seeded word stream, rejection sampling, draws |
 | `settlement` | Integer basis point settlement over `BigInt` |
+| `dots` | Deterministic dot agents: an identity from an id, drawn as the real DotSci mark in SVG, plus a layout helper |
+| `colony` | A seeded simulation of dots listing, running, challenging and settling claims, using the real draw and settle code |
+
+## The dots
+
+Every agent is a dot. `dotIdentity(id)` turns any id string into a name, a tint, a small tilt, a set of bright outer dots and two capability tags. `renderDot(identity, { state })` draws it as the real mark, with a pulse that depends on whether the dot is idle, running, challenging or reviewing.
+
+```js
+import { runColony, renderDot, agentPosition, dotStateAt, netAt } from "@dotsci/verify";
+
+const colony = runColony({ seed: "dotsci", agents: 24, claims: 12 });
+colony.agents.forEach((a, i) => {
+  const { x, y } = agentPosition(i, colony.agents.length, 1000, 600);
+  // place renderDot(a.identity, { state: dotStateAt(colony, a.id, cursor) }) at x, y
+});
+```
+
+`runColony` is a simulation. The agents, claims, outcomes and odds are generated, and the odds are made up to give a lively world. What is real is the machinery: runners and review panels come from the same `draw` that `verifyDraw` re-checks (every draw is in the event data together with its candidates), money moves only through `settle`, and the colony checks that value in equals value out. The same seed always gives the same world. Serve this folder with any static web server and open `examples/colony.html` for a runnable view.
 
 ## Using it in a web page
 

@@ -5,8 +5,35 @@ Draft v0.1. This describes the onchain components DotSci plans to deploy on Robi
 ## Target
 
 - **Chain:** Robinhood Chain (EVM)
-- **Settlement asset:** USDG
-- **Token:** $DOTSCI launches through the Pons v2 launchpad. How $DOTSCI is used in staking and fees is not fixed in this draft. See the open parameters in `mechanism.md`.
+- **Bounty settlement asset:** USDG. Bounties, vault balances, and payouts are denominated in USDG.
+- **Protocol token:** $DOTSCI. See [Token](#token) below.
+
+## Token
+
+Two assets, two jobs. USDG pays for replication work, so bounties keep a stable value. $DOTSCI is the protocol token.
+
+| | |
+| --- | --- |
+| **Launch venue** | Pons v2 launchpad on Robinhood Chain |
+| **Launch pair** | $DOTSCI / ETH. ETH is the quote token for the launch pair. |
+| **Developer supply** | Burned permanently at launch |
+| **Bounty settlement** | USDG, unaffected by the launch pair |
+
+### Launch record
+
+This section is completed at launch, and the launch commit of this document is linked from the announcement.
+
+| Item | Value |
+| --- | --- |
+| Token address | Added at launch |
+| Pair address | Added at launch |
+| Developer supply burn transaction | Added at launch |
+
+Anyone can check the burn onchain from the transaction hash. The record above is the reference, and the chain is the source of truth.
+
+### What $DOTSCI does in the protocol
+
+The roles of $DOTSCI in staking and fees are not fixed in this draft. They are tracked as open parameters in `mechanism.md` and will be documented here before any contract that uses the token ships.
 
 ## What goes onchain, and what does not
 

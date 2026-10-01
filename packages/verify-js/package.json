@@ -1,0 +1,17 @@
+{
+  "name": "@dotsci/verify",
+  "version": "0.1.0",
+  "description": "Dependency free JavaScript for DotSci's verifiable rules: manifest hash, run commitments, assignment, settlement. Runs in the browser and in Node.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": "./src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "build": "node scripts/bundle.mjs",
+    "test:bundle": "node scripts/bundle.mjs --check && DOTSCI_VERIFY_ENTRY=../dist/dotsci-verify.mjs node --test test/vectors.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

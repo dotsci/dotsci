@@ -5,6 +5,7 @@ Language neutral test vectors for the parts of DotSci that other implementations
 | File | Pins down |
 | --- | --- |
 | `manifest-hash.json` | Canonical JSON of a manifest and its SHA-256 |
+| `json-numbers.json` | How each number token is written in the canonical form |
 | `merkle.json` | RFC 6962 trees, audit paths, inclusion verdicts (valid and invalid), and the file leaf format |
 | `assignment.json` | The seeded word stream, rejection sampling, and full draws |
 | `settlement.json` | Settlement payouts for every case kind, including rounding dust, huge amounts, ties and invalid input |
@@ -25,7 +26,9 @@ Amounts and 64 bit words are decimal strings, so values past 2^53 (token amounts
 
 **Settlement.** Integer basis point math with floor division, and the conservation invariant: everything that went in comes out as a payout, to the vault, or as treasury dust. The parameter sets in the file are test values. They are not proposals, the real values are open decisions.
 
-## Two checks
+**Ordering.** Object keys, file paths and assignment candidates are all ordered by Unicode code point, which for paths is the same as ordering their UTF-8 bytes. UTF-16 order, the default string sort in JavaScript, differs for characters above U+FFFF, and the vectors include a case for it.
+
+## Three checks
 
 The reference packages replay the vectors in their own tests. `verify.py` replays them with a separate implementation that imports nothing from DotSci:
 
@@ -34,6 +37,8 @@ python spec/vectors/verify.py
 ```
 
 It reproduces every vector using only the standard library, and verifies Merkle proofs iteratively where the reference is recursive. If the two ever disagree, one of them is wrong. It is also a compact reference for a port.
+
+[`packages/verify-js`](../../packages/verify-js) is a third implementation, in JavaScript, and replays the same files in CI. Use `text` from `manifest-hash.json`, not a parsed object, when hashing in a language whose JSON parser does not keep the difference between `5` and `5.0`.
 
 ## Regenerating
 

@@ -19,6 +19,8 @@ All notable changes to DotSci are listed here. The project is at the framework s
 - Incentive analysis: `dotsci-protocol explore` finds the smallest runner stake that makes honest running beat faking, plus griefing and reviewer defection thresholds, computed with the settlement engine
 - Tolerance calibration: `dotsci-runner calibrate` summarizes repeated reruns of one claim, reports how much honest reruns vary, flags a `spec_issue` when they disagree, and suggests the smallest tolerance that would have matched every rerun
 - Conformance vectors in `spec/vectors`: manifest hashing, Merkle commitments, assignment and settlement as language neutral JSON, replayed by the reference tests, by an independent standard library verifier, and checked for drift in CI
+- `@dotsci/verify` (`packages/verify-js`): the manifest hash, run commitments, assignment and settlement in dependency free JavaScript for browsers and Node, replaying the same conformance vectors as the Python packages
+- Conformance vectors for number tokens (`json-numbers.json`), code point ordering of keys, paths and candidates, and truncated Merkle proofs
 - Animated banner and typing SVGs for the README
 - Docs: architecture, protocol, mechanism, threat model, manifest spec, roadmap, guide to writing a claim
 - CI running the runner tests on Python 3.11 and 3.12

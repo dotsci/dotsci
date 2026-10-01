@@ -69,6 +69,8 @@ def manifest_vectors() -> dict:
         "string_escapes": {"s": 'quote " backslash \\ newline \n tab \t'},
         "integers": {"zero": 0, "negative": -7, "large": 9007199254740993},
         "floats_use_shortest_repr": {"a": 0.1, "b": 1e-07, "c": 1e22, "d": 5.0, "e": 0.63},
+        "keys_sort_by_code_point_not_utf16": {"\U0001f600": 1, "\uffff": 2, "a": 3, "\u00e9": 4},
+        "control_characters_escaped": {"c": "\u0001\u001f\u007f\b\f"},
         "nested_arrays": {"x": [[1, 2], [], [{"k": "v"}]]},
         "booleans_and_null": {"t": True, "f": False, "n": None},
         "demo_claim_manifest": demo,
@@ -79,13 +81,14 @@ def manifest_vectors() -> dict:
             {
                 "name": name,
                 "manifest": obj,
+                "text": json.dumps(obj, ensure_ascii=False),
                 "canonical": canonical_json(obj).decode("utf-8"),
                 "sha256": manifest_hash(obj),
             }
         )
     return {
         "version": VERSION,
-        "description": "Canonical JSON and SHA-256 of a manifest. canonical is the exact UTF-8 text that is hashed.",
+        "description": "Canonical JSON and SHA-256 of a manifest. text is the manifest as JSON text (use it, not a parsed object, so 5.0 stays a float). canonical is the exact UTF-8 text that is hashed.",
         "rules": [
             "keys sorted by Unicode code point, recursively",
             "separators are ',' and ':' with no whitespace",
@@ -94,6 +97,48 @@ def manifest_vectors() -> dict:
             "numbers follow the shortest round-trip form of Python's json module, so 5.0 stays 5.0 and 1e-07 stays 1e-07",
         ],
         "cases": cases,
+    }
+
+
+def number_vectors() -> dict:
+    """How number tokens are written back out. Token kind matters: 5 is an int, 5.0 is a float."""
+    import random
+    import struct
+
+    lexemes = [
+        "0", "-0", "7", "-7", "9007199254740993", "123456789012345678901234567890", "-123456789012345678901234567890",
+        "0.0", "-0.0", "5.0", "5.10", "0.1", "0.30000000000000004", "1e5", "1E5", "1e+5", "1.0e2", "2.5e-3",
+        "1e-7", "1e-05", "0.0001", "0.00001", "123456789.123456789", "1e15", "1e16", "1e17", "9999999999999998.0",
+        "1e22", "1e21", "1e23", "5e-324", "1.7976931348623157e308", "4.35", "100.0", "1234567.0", "0.5e1",
+        "1e0", "-1e-10", "123e-20", "12345678901234567890.0",
+    ]
+    rng = random.Random(20261001)  # fixed seed, only used to pick example numbers
+    for _ in range(120):
+        bits = rng.getrandbits(64)
+        value = struct.unpack(">d", bits.to_bytes(8, "big"))[0]
+        if value != value or value in (float("inf"), float("-inf")):
+            continue
+        lexemes.append(repr(value))
+    for _ in range(60):
+        lexemes.append(repr(round(rng.uniform(-1000, 1000), rng.randint(0, 8))))
+    cases = []
+    seen = set()
+    for lex in lexemes:
+        if lex in seen:
+            continue
+        seen.add(lex)
+        cases.append({"lexeme": lex, "canonical": json.dumps(json.loads(lex), allow_nan=False)})
+    return {
+        "version": VERSION,
+        "description": "A number token as it appears in a manifest, and how the canonical form writes it. Integers keep their digits, floats use the shortest round-trip form with Python's exponent rules.",
+        "rules": [
+            "a token with no fraction and no exponent is an integer of any size and is written back unchanged, except -0 which becomes 0",
+            "any other token is a float: shortest round-trip digits, fixed notation when the decimal exponent is between -4 and 15, otherwise exponent notation with a sign and at least two exponent digits",
+            "a float always shows a fraction digit in fixed notation (5.0), exponent notation drops it when there is one digit (1e-07)",
+            "a token that overflows to infinity is rejected",
+        ],
+        "cases": cases,
+        "rejected": ["1e999", "-1e999"],
     }
 
 
@@ -146,6 +191,10 @@ def merkle_vectors() -> dict:
     add("flipped_sibling_bit", siblings=[flipped.hex()] + [s.hex() for s in good[1:]])
     add("swapped_siblings", siblings=[good[1].hex(), good[0].hex(), good[2].hex()])
     add("wrong_root", root="11" * 32)
+    # A truncated proof that stops at an interior node must not verify against that node's hash.
+    sub_root = commit.merkle_root(base[:4])
+    add("subtree_root_with_full_size", root=sub_root.hex(), index=0, leaf=base[0].hex(),
+        siblings=[x.hex() for x in commit.audit_path(base[:4], 0)])
     # Second preimage attempt: present the two child hashes of the root as the data of a
     # one leaf tree. The 0x00 and 0x01 prefixes make this fail.
     pair = [b"left", b"right"]
@@ -162,6 +211,7 @@ def merkle_vectors() -> dict:
         },
         "path_order_is_by_bytes": {
             "b": "01" * 32, "a": "02" * 32, "a/b": "03" * 32, "B": "04" * 32, "é": "05" * 32, "z": "06" * 32,
+            "\uffff": "07" * 32, "\U0001f600": "08" * 32,
         },
         "single_file": {"results.json": "ab" * 32},
         "empty": {},
@@ -233,6 +283,16 @@ def assignment_vectors() -> dict:
             {
                 "seed": seed.hex(), "claim_id": claim, "role": role, "candidates": pool, "count": count,
                 "picks": assignment.draw(seed, claim, role, pool, count),
+            }
+        )
+    # Candidates are ordered by code point (equivalently, by UTF-8 bytes), not by UTF-16 unit.
+    astral = ["\U0001f600", "\uffff", "a", "\u00e9", "\U00010000", "\ue000", "Z"]
+    for i in range(3):
+        seed = hashlib.sha256(f"astral-{i}".encode()).digest()
+        draws.append(
+            {
+                "seed": seed.hex(), "claim_id": "claim-astral", "role": "reviewer", "candidates": astral, "count": len(astral),
+                "picks": assignment.draw(seed, "claim-astral", "reviewer", astral, len(astral)),
             }
         )
     errors = [
@@ -385,6 +445,7 @@ def settlement_vectors() -> dict:
 
 GENERATORS = {
     "manifest-hash.json": manifest_vectors,
+    "json-numbers.json": number_vectors,
     "merkle.json": merkle_vectors,
     "assignment.json": assignment_vectors,
     "settlement.json": settlement_vectors,

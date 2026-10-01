@@ -17,6 +17,7 @@ All notable changes to DotSci are listed here. The project is at the framework s
 - Protocol reference model (`packages/protocol`): Merkle run commitments checked against RFC 6962 vectors, verifiable unbiased assignment, and an integer settlement engine fuzzed for conservation
 - Dispute evidence: `dotsci-runner diff` compares two run records and states exactly which comparison differs and by how much
 - Incentive analysis: `dotsci-protocol explore` finds the smallest runner stake that makes honest running beat faking, plus griefing and reviewer defection thresholds, computed with the settlement engine
+- Tolerance calibration: `dotsci-runner calibrate` summarizes repeated reruns of one claim, reports how much honest reruns vary, flags a `spec_issue` when they disagree, and suggests the smallest tolerance that would have matched every rerun
 - Animated banner and typing SVGs for the README
 - Docs: architecture, protocol, mechanism, threat model, manifest spec, roadmap, guide to writing a claim
 - CI running the runner tests on Python 3.11 and 3.12

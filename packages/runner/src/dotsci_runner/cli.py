@@ -10,6 +10,7 @@ from pathlib import Path
 
 from . import __version__
 from .compare import REPRODUCED, compare_targets
+from .calibrate import CalibrationError, calibrate, render as render_calibration
 from .dispute import AGREE, diff_runs, render, validate_run_record
 from .hashing import verify_inputs
 from .job import preflight, run_job
@@ -72,6 +73,23 @@ def _cmd_diff(args: argparse.Namespace) -> int:
     evidence = diff_runs(records[0], records[1])
     print(json.dumps(evidence.to_dict(), indent=2) if args.json else render(evidence))
     return 0 if evidence.verdict == AGREE else 1
+
+
+def _cmd_calibrate(args: argparse.Namespace) -> int:
+    records = []
+    for path in args.runs:
+        try:
+            records.append(json.loads(Path(path).read_text(encoding="utf-8")))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"cannot read {path}: {exc}", file=sys.stderr)
+            return 1
+    try:
+        result = calibrate(records, margin=args.margin)
+    except CalibrationError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    print(json.dumps(result.to_dict(), indent=2) if args.json else render_calibration(result))
+    return 1 if result.spec_issue else 0
 
 
 def _cmd_verify_inputs(args: argparse.Namespace) -> int:
@@ -225,6 +243,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_diff.add_argument("run_b", help="for example the challenger's run record")
     p_diff.add_argument("--json", action="store_true", help="print machine readable evidence")
     p_diff.set_defaults(func=_cmd_diff)
+
+    p_cal = sub.add_parser("calibrate", help="estimate how much honest reruns vary and what tolerance that implies")
+    p_cal.add_argument("runs", nargs="+", help="run records from repeated reruns of one claim")
+    p_cal.add_argument("--margin", type=float, default=2.0, help="multiplier on the smallest tolerance that matches every rerun (at least 1)")
+    p_cal.add_argument("--json", action="store_true", help="print machine readable output")
+    p_cal.set_defaults(func=_cmd_calibrate)
 
     p_inputs = sub.add_parser("verify-inputs", help="check input file hashes against a manifest")
     p_inputs.add_argument("manifest")

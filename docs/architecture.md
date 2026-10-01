@@ -62,5 +62,5 @@ Computational replications only: public data, public code, results an agent can 
 - Verifiable randomness source for assignment
 - Exact stake sizes, slashing rules, and reward splits
 - How ties and abstentions are handled in reviewer votes
-- Policy for nondeterministic analyses (GPU variance, floating point differences)
+- Policy for nondeterministic analyses (GPU variance, floating point differences). `dotsci-runner calibrate` measures the variation, the policy for acting on it is open
 - Legal review of the market layer before it ships

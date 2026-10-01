@@ -10,6 +10,7 @@ What it does today:
 - Runs a manifest's entrypoint inside a locked-down container (see `../../sandbox/README.md`)
 - Compares rerun values to published targets using each target's tolerance
 - Compares two run records of the same claim and states exactly where they differ (`diff`)
+- Measures how much honest reruns vary and what tolerance that implies (`calibrate`)
 - Writes JSONL logs in the DotSci format
 - Produces a run record
 
@@ -31,6 +32,7 @@ dotsci-runner validate MANIFEST
 dotsci-runner verify-inputs MANIFEST --data-dir DIR
 dotsci-runner compare MANIFEST --results RESULTS.json [--job-id ID] [--role runner|challenger] [--out RUN.json]
 dotsci-runner diff RUN_A.json RUN_B.json [--json]
+dotsci-runner calibrate RUN1.json RUN2.json ... [--margin 2.0] [--json]
 dotsci-runner run MANIFEST --code-dir DIR --data-dir DIR --out-dir DIR --image REPO@sha256:DIGEST [--dry-run] [--record RUN.json]
 ```
 

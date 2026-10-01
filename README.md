@@ -62,6 +62,7 @@ This repository is at the framework stage. The table says what exists and what d
 | Lab message spec (`spec/`) | Draft v0.1 |
 | Manifest hashing (`dotsci-runner hash`) | Working, tested |
 | Dispute evidence (`dotsci-runner diff`) | Working, tested |
+| Tolerance calibration (`dotsci-runner calibrate`) | Working, tested |
 | Runner toolkit (`packages/runner`) | Scaffold: validation, input hash checks, tolerance comparison, JSONL logs, CLI |
 | Sandbox reference (`sandbox/`, `dotsci-runner run`) | Scaffold: hardened container settings, reference Dockerfile, job orchestration. Tested with a stand-in docker, not yet against a real Docker daemon |
 | Demo claim (`examples/demo-claim`) | Working, fictional data |
@@ -106,6 +107,12 @@ Compare a challenger's run to the runner's and see exactly where they differ:
 
 ```bash
 dotsci-runner diff runner-run.json challenger-run.json
+```
+
+Measure how much honest reruns vary before you pick a tolerance:
+
+```bash
+dotsci-runner calibrate run1.json run2.json run3.json run4.json run5.json
 ```
 
 Commit to a run's files with one Merkle root, and prove a single file belongs to it:

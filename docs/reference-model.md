@@ -76,6 +76,22 @@ dotsci-runner diff runner-run.json challenger-run.json
 
 Two runs are only comparable if they ran the same claim on the same pinned inputs and environment. If not, the evidence reports the setup difference instead of a false disagreement. For comparable runs it reports each target's values and difference, and the verdict turns on whether the runs agree on match status. Honest reruns that differ slightly but both land inside tolerance still agree. Output file hashes are shown but never decide the verdict. Add `--json` for machine readable evidence. The exit code is 0 for agree and 1 otherwise.
 
+## Calibrating a tolerance
+
+A tolerance that is too tight makes honest reruns disagree. One that is too loose lets a wrong result pass. `dotsci-runner calibrate` looks at several run records of the same claim and reports how much they actually vary:
+
+```bash
+dotsci-runner calibrate run1.json run2.json run3.json run4.json run5.json
+```
+
+The runs must share the claim, the pinned inputs, the image digest and the seed, or calibration refuses to mix them. For each target it reports the mean, range, spread and bias, and one of three verdicts:
+
+- `stable_match`: every rerun is within the declared tolerance.
+- `stable_miss`: every rerun is outside it. The reruns agree with each other, so noise does not explain the miss, and widening the tolerance would be tuning to an outcome.
+- `unstable`: some reruns match and some do not. Honest reruns of one manifest disagree, which is a `spec_issue`. The exit code is 1.
+
+It also prints the smallest tolerance under which every observed rerun would match the published value, times `--margin` (default 2, minimum 1). With fewer than five reruns that number is a lower bound and the report says so. Calibration never edits a manifest. The tolerance stays part of the claim and a human choice, as described in [writing-a-claim](writing-a-claim.md).
+
 ## Why this exists
 
 - **Contracts get a specification to be tested against.** The planned contract tests can replay the same cases and compare payouts to the model, unit for unit.

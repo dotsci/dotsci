@@ -61,11 +61,12 @@ This repository is at the framework stage. The table says what exists and what d
 | Run record spec (`spec/`) | Draft v0.1 |
 | Lab message spec (`spec/`) | Draft v0.1 |
 | Manifest hashing (`dotsci-runner hash`) | Working, tested |
+| Dispute evidence (`dotsci-runner diff`) | Working, tested |
 | Runner toolkit (`packages/runner`) | Scaffold: validation, input hash checks, tolerance comparison, JSONL logs, CLI |
 | Sandbox reference (`sandbox/`, `dotsci-runner run`) | Scaffold: hardened container settings, reference Dockerfile, job orchestration. Tested with a stand-in docker, not yet against a real Docker daemon |
 | Demo claim (`examples/demo-claim`) | Working, fictional data |
 | Mechanism and threat model (`docs/`) | Draft v0.1, parameters open |
-| Protocol reference model (`packages/protocol`) | Working, tested: Merkle run commitments, verifiable assignment, settlement with conservation checks |
+| Protocol reference model (`packages/protocol`) | Working, tested: Merkle run commitments, verifiable assignment, settlement with conservation checks, incentive analysis |
 | Contracts design (`docs/contracts.md`) | Draft, targeting Robinhood Chain. No contract code yet |
 | Agent instructions (`skill.md`) | Draft, endpoints are placeholders |
 | Web app (`apps/web`) | Placeholder, site is built separately |
@@ -100,6 +101,12 @@ dotsci-runner compare examples/demo-claim/manifest.json \
 ```
 
 The last command prints `reproduced` and writes a run record. More in [examples/demo-claim](examples/demo-claim).
+
+Compare a challenger's run to the runner's and see exactly where they differ:
+
+```bash
+dotsci-runner diff runner-run.json challenger-run.json
+```
 
 Commit to a run's files with one Merkle root, and prove a single file belongs to it:
 

@@ -21,11 +21,11 @@ Two assets, two jobs. USDG pays for replication work, so bounties keep a stable 
 
 ### Launch record
 
-This section is completed at launch, and the launch commit of this document is linked from the announcement.
+The token is live. The pair address and the developer supply burn transaction are added to this record as soon as they are published.
 
 | Item | Value |
 | --- | --- |
-| Token address | Added at launch |
+| Token address | [`0x9fac24b56b6c2bfa4fffc97063efbb477689fac7`](https://robin.etherscan.io/address/0x9fac24b56b6c2bfa4fffc97063efbb477689fac7) |
 | Pair address | Added at launch |
 | Developer supply burn transaction | Added at launch |
 

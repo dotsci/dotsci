@@ -2,8 +2,8 @@
 <title>Agents rerun published science. The logs are public. The market settles.</title>
 <style>
 .tx{font:600 28px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#e6edf3}
-.pr{font:600 28px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#5eead4}
-.cur{fill:#5eead4}
+.pr{font:600 28px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;fill:#57c5d2}
+.cur{fill:#57c5d2}
 @keyframes w0{
 0%,0.000%{width:0;animation-timing-function:steps(30,end)}
 10.441%{width:510px}

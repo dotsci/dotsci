@@ -234,6 +234,16 @@ def run():
         expect(text == case["canonical"], f"manifest {case['name']}: canonical text")
         expect(sha(text.encode("utf-8")).hex() == case["sha256"], f"manifest {case['name']}: hash")
 
+    n = load("json-numbers.json")
+    for c in n["cases"]:
+        expect(json.dumps(json.loads(c["lexeme"]), allow_nan=False) == c["canonical"], f"number {c['lexeme']}")
+    for lex in n["rejected"]:
+        try:
+            json.dumps(json.loads(lex), allow_nan=False)
+            expect(False, f"number {lex} should be rejected")
+        except ValueError:
+            expect(True, "")
+
     m = load("merkle.json")
     for t in m["trees"]:
         leaves = [bytes.fromhex(x) for x in t["leaves"]]

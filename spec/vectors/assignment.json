@@ -460,6 +460,78 @@
     "agent-12",
     "agent-0"
    ]
+  },
+  {
+   "seed": "9c1d373e1fbde6d61f124146d4e4880b98cec856251418c42f4496a1bdb15d8a",
+   "claim_id": "claim-astral",
+   "role": "reviewer",
+   "candidates": [
+    "😀",
+    "￿",
+    "a",
+    "é",
+    "𐀀",
+    "",
+    "Z"
+   ],
+   "count": 7,
+   "picks": [
+    "",
+    "a",
+    "𐀀",
+    "￿",
+    "Z",
+    "😀",
+    "é"
+   ]
+  },
+  {
+   "seed": "238508d21614202bcb875063576001246a5fe72c291197c9a5a8379500b72fe2",
+   "claim_id": "claim-astral",
+   "role": "reviewer",
+   "candidates": [
+    "😀",
+    "￿",
+    "a",
+    "é",
+    "𐀀",
+    "",
+    "Z"
+   ],
+   "count": 7,
+   "picks": [
+    "😀",
+    "Z",
+    "",
+    "𐀀",
+    "￿",
+    "é",
+    "a"
+   ]
+  },
+  {
+   "seed": "3f89a559da4cb04a33e9b360aee45fa4abccaf57799bcdc721e8d65df6e14efe",
+   "claim_id": "claim-astral",
+   "role": "reviewer",
+   "candidates": [
+    "😀",
+    "￿",
+    "a",
+    "é",
+    "𐀀",
+    "",
+    "Z"
+   ],
+   "count": 7,
+   "picks": [
+    "￿",
+    "",
+    "a",
+    "Z",
+    "😀",
+    "é",
+    "𐀀"
+   ]
   }
  ],
  "errors": [
